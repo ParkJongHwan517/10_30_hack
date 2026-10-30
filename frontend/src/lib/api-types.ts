@@ -180,10 +180,10 @@ export interface components {
         Observation: {
             /**
              * Item Type
-             * @description 이 항목(따로 버리는 물건·구성품 하나)의 종류. pet_bottle=음료·생수 페트병. styrofoam_container=발포 스티로폼(EPS)만: 표면에 작은 알갱이 무늬가 보이고 두껍고 가볍고 불투명하다. plastic_container=플라스틱 용기·트레이·컵·뚜껑: 얇고 매끈하거나 광택 있는 흰색 트레이도 여기에 넣는다. cardboard_box=상자 모양의 종이: 택배 골판지 상자와 과자·제품 상자(얇은 판지). 컵홀더·종이 용기·종이 봉투처럼 상자가 아닌 종이는 other로 하고 material_guess를 paper로 쓴다. can=알루미늄·철로 된 음료·식품 캔. vinyl=비닐류: 과자·라면 봉지, 비닐봉지, 뽁뽁이(에어캡), 랩. glass_bottle=유리병. small_plastic=빨대, 일회용 숟가락·포크처럼 작은 플라스틱. paper_pack=우유팩·주스팩·두유 멸균팩처럼 안쪽이 코팅된 음료용 종이팩(종이 상자와 구분). receipt_coated_paper=영수증, 택배 전표, 라벨 스티커, 명함·사진, 금은박·비닐 코팅된 종이. other=위에 해당하지 않는 물체. unknown=무엇인지 판별할 수 없음.
+             * @description 이 항목(따로 버리는 물건·구성품 하나)의 종류. pet_bottle=음료·생수 페트병. styrofoam_container=발포 스티로폼(EPS)만: 표면에 작은 알갱이 무늬가 보이고 두껍고 가볍고 불투명하다. plastic_container=플라스틱 용기·트레이·컵·뚜껑: 얇고 매끈하거나 광택 있는 흰색 트레이도 여기에 넣는다. cardboard_box=상자 모양의 종이: 택배 골판지 상자와 과자·제품 상자(얇은 판지). 컵홀더·종이 용기·종이 봉투처럼 상자가 아닌 종이는 other로 하고 material_guess를 paper로 쓴다. can=알루미늄·철로 된 음료·식품 캔. vinyl=비닐류: 과자·라면 봉지, 비닐봉지, 뽁뽁이(에어캡), 랩. glass_bottle=유리병. small_plastic=빨대, 일회용 숟가락·포크처럼 작은 플라스틱. paper_pack=우유팩·주스팩·두유 멸균팩처럼 안쪽이 코팅된 음료용 종이팩(종이 상자와 구분). receipt_coated_paper=영수증, 택배 전표, 라벨 스티커, 명함·사진, 금은박·비닐 코팅된 종이. wet_tissue=사용한 물티슈(종이처럼 보여도 부직포라 종이가 아니다). general_waste=재활용되지 않는 일반쓰레기: 사용한 휴지·폐휴지, 기저귀, 부직포, 벽지. noncombustible_item=불연성 쓰레기: 사기그릇·도자기, 조개껍데기, 동물 뼈. other=위에 해당하지 않는 물체. unknown=무엇인지 판별할 수 없음.
              * @enum {string}
              */
-            item_type: "pet_bottle" | "styrofoam_container" | "plastic_container" | "cardboard_box" | "can" | "vinyl" | "glass_bottle" | "small_plastic" | "paper_pack" | "receipt_coated_paper" | "other" | "unknown";
+            item_type: "pet_bottle" | "styrofoam_container" | "plastic_container" | "cardboard_box" | "can" | "vinyl" | "glass_bottle" | "small_plastic" | "paper_pack" | "receipt_coated_paper" | "wet_tissue" | "general_waste" | "noncombustible_item" | "other" | "unknown";
             /**
              * Material Guess
              * @description 재질 추정. PET=투명 페트, EPS=발포 스티로폼(알갱이 무늬), PP·PS=일반 플라스틱, paper=종이·판지, metal=금속, vinyl=비닐·필름, glass=유리, mixed=여러 재질이 붙어 있음. item_type과 같은 판단이어야 한다(예: 종이 상자를 EPS로 쓰지 않는다).

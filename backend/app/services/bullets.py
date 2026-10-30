@@ -7,7 +7,7 @@ from ..models import Observation
 
 MAX_BULLETS = 4
 BOTTLE_LIKE = ("pet_bottle", "can", "glass_bottle", "paper_pack")
-NO_DAMAGE_LINE = ("vinyl", "small_plastic", "paper_pack", "receipt_coated_paper")  # 파손 여부가 배출에 상관없는 품목  # 오염 대신 내용물 유무를 보여준다
+NO_DAMAGE_LINE = ("vinyl", "small_plastic", "paper_pack", "receipt_coated_paper", "wet_tissue", "general_waste", "noncombustible_item")  # 파손 여부가 배출에 상관없는 품목  # 오염 대신 내용물 유무를 보여준다
 
 
 def is_box_like(o: Observation) -> bool:
@@ -40,6 +40,12 @@ def _item_line(o: Observation) -> str | None:
             return "유리병"
         case "small_plastic":
             return "작은 플라스틱 (빨대·일회용 숟가락·포크 등)"
+        case "wet_tissue":
+            return "물티슈"
+        case "general_waste":
+            return o.label_ko or "일반쓰레기"
+        case "noncombustible_item":
+            return o.label_ko or "불연성 쓰레기"
         case "paper_pack":
             return "종이팩 (우유·주스팩)"
         case "receipt_coated_paper":
@@ -50,6 +56,8 @@ def _item_line(o: Observation) -> str | None:
 
 
 def _contamination_line(o: Observation, washed: bool) -> str | None:
+    if o.item_type in ("wet_tissue", "general_waste", "noncombustible_item"):
+        return None  # 오염·내용물이 판단에 상관없는 품목
     if o.item_type in BOTTLE_LIKE:
         return "내용물 있음" if o.contents_present == "yes" else "내용물 없음"
     clean = o.contamination.level == "none"

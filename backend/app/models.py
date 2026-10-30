@@ -31,7 +31,8 @@ class Observation(BaseModel):
     # description은 Gemini response_schema에 그대로 실려 분류 기준으로 쓰인다(값 목록은 API 계약)
     item_type: Literal[
         "pet_bottle", "styrofoam_container", "plastic_container", "cardboard_box", "can",
-        "vinyl", "glass_bottle", "small_plastic", "paper_pack", "receipt_coated_paper", "other", "unknown",
+        "vinyl", "glass_bottle", "small_plastic", "paper_pack", "receipt_coated_paper",
+        "wet_tissue", "general_waste", "noncombustible_item", "other", "unknown",
     ] = Field(description=(
         "이 항목(따로 버리는 물건·구성품 하나)의 종류. "
         "pet_bottle=음료·생수 페트병. "
@@ -44,6 +45,9 @@ class Observation(BaseModel):
         "small_plastic=빨대, 일회용 숟가락·포크처럼 작은 플라스틱. "
         "paper_pack=우유팩·주스팩·두유 멸균팩처럼 안쪽이 코팅된 음료용 종이팩(종이 상자와 구분). "
         "receipt_coated_paper=영수증, 택배 전표, 라벨 스티커, 명함·사진, 금은박·비닐 코팅된 종이. "
+        "wet_tissue=사용한 물티슈(종이처럼 보여도 부직포라 종이가 아니다). "
+        "general_waste=재활용되지 않는 일반쓰레기: 사용한 휴지·폐휴지, 기저귀, 부직포, 벽지. "
+        "noncombustible_item=불연성 쓰레기: 사기그릇·도자기, 조개껍데기, 동물 뼈. "
         "other=위에 해당하지 않는 물체. unknown=무엇인지 판별할 수 없음."
     ))
     material_guess: Literal[

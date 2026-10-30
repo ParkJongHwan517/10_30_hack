@@ -302,6 +302,9 @@ class Observation(BaseModel):
 | `glass_bottle` *(확장)* | `damage == "broken"` | `FINAL(NONCOMBUSTIBLE)` (깨진 유리는 불연성 마대) |
 | | 그 외 | `FINAL(GLASS)` |
 | `paper_pack` *(확장)* | 항상 (종이류와 따로) | `FINAL(PAPER_PACK)` |
+| `wet_tissue` *(확장)* | 항상 | `FINAL(GENERAL)` — 근거: 인천시 공식 안내(2026-07-30), 부산시 안내에 없음 |
+| `general_waste` *(확장)* | 항상 (사용한 휴지·폐휴지, 기저귀, 부직포, 벽지) | `FINAL(GENERAL)` — 부산시 종이류 안내 |
+| `noncombustible_item` *(확장)* | 항상 (사기그릇·도자기, 조개껍데기, 동물 뼈) | `FINAL(NONCOMBUSTIBLE)` — 부산시 불연성 안내 |
 | `receipt_coated_paper` *(확장)* | 항상 (영수증·전표·코팅지는 종이류 아님) | `FINAL(GENERAL)` |
 | `other` + `material_guess == "paper"` *(보완)* | `cardboard_box`와 동일 | `FINAL(PAPER)` / `FINAL(GENERAL)` |
 
