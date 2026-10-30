@@ -156,6 +156,9 @@ button:disabled { cursor: not-allowed; opacity: .48; }
 .result-footnote { margin: 13px 0 0; color: #8a6570; font-size: 10px; }
 .result-screen > .button { margin-top: 24px; }
 .muted-text { color: #8293a5; font-size: 11px; }
+.wait-note { margin: 18px 0 0; font-size: 12px; }
+.screen-lead.lead-has-note { margin-bottom: 6px; }
+.screen-lead.lead-note { margin-top: 0; }
 .notice-icon { width: 65px; height: 65px; display: grid; place-items: center; margin: 5px auto 20px; border-radius: 50%; color: #fff; background: #e6a03c; font-size: 35px; font-weight: 800; }
 .notice-blue { background: var(--blue); }.notice-red { background: var(--red); }
 .notice-screen .button { margin-top: 7px; }
