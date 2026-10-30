@@ -6,7 +6,8 @@
 from ..models import Observation
 
 MAX_BULLETS = 4
-BOTTLE_LIKE = ("pet_bottle", "can", "glass_bottle")  # 오염 대신 내용물 유무를 보여준다
+BOTTLE_LIKE = ("pet_bottle", "can", "glass_bottle", "paper_pack")
+NO_DAMAGE_LINE = ("vinyl", "small_plastic", "paper_pack", "receipt_coated_paper")  # 파손 여부가 배출에 상관없는 품목  # 오염 대신 내용물 유무를 보여준다
 
 
 def _is_paper(o: Observation) -> bool:
@@ -32,6 +33,10 @@ def _item_line(o: Observation) -> str | None:
             return "유리병"
         case "small_plastic":
             return "작은 플라스틱 (빨대·일회용 수저 등)"
+        case "paper_pack":
+            return "종이팩 (우유·주스팩)"
+        case "receipt_coated_paper":
+            return "영수증·코팅된 종이"
         case "other" if o.material_guess == "paper":
             return "종이류"
     return None
@@ -76,7 +81,7 @@ def build_bullets(o: Observation, *, washed: bool = False, extra: str | None = N
         lines.append(extra)
     elif o.item_type == "glass_bottle" and o.damage == "broken":
         lines.append("깨짐 있음")
-    elif o.damage == "none" and not _is_paper(o) and o.item_type not in ("vinyl", "small_plastic"):
+    elif o.damage == "none" and not _is_paper(o) and o.item_type not in NO_DAMAGE_LINE:
         lines.append("파손 없음")
 
     return [line for line in lines if line][:MAX_BULLETS]
