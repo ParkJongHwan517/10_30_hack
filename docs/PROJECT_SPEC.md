@@ -301,6 +301,8 @@ class Observation(BaseModel):
 | | 그 외 | `FINAL(VINYL)` |
 | `glass_bottle` *(확장)* | `damage == "broken"` | `FINAL(NONCOMBUSTIBLE)` (깨진 유리는 불연성 마대) |
 | | 그 외 | `FINAL(GLASS)` |
+| `paper_pack` *(확장)* | 항상 (종이류와 따로) | `FINAL(PAPER_PACK)` |
+| `receipt_coated_paper` *(확장)* | 항상 (영수증·전표·코팅지는 종이류 아님) | `FINAL(GENERAL)` |
 | `other` + `material_guess == "paper"` *(보완)* | `cardboard_box`와 동일 | `FINAL(PAPER)` / `FINAL(GENERAL)` |
 
 - 재촬영 결과(`attempt==2`)에서 오염이 없으면 `FINAL(STYROFOAM)` 또는 `FINAL(PLASTIC)`, 오염 불릿은 **"음식물·소스 오염 없음 (세척 완료)"**.
@@ -452,6 +454,7 @@ class Decision(BaseModel):
 | G8 *(확장)* | 빈 음료 캔 | FINAL / CAN | 캔류 분리배출 대상입니다. | 캔 (금속) · 내용물 없음 · 파손 없음 | ① 내용물을 비우고 헹구기 ② 플라스틱 뚜껑 등 다른 재질은 분리하기 ③ 캔류로 분리배출하기 |
 | G9 *(확장)* | 깨끗한 과자 봉지 | FINAL / VINYL | 비닐류 분리배출 대상입니다. | 비닐류 · 이물질 없음 | ① 물기·음식물 등 이물질 제거하기 ② 여러 장은 한 봉투에 모으기 ③ 비닐류로 분리배출하기 |
 | G10 *(확장)* | 빈 유리 음료병 | FINAL / GLASS | 유리병류 분리배출 대상입니다. | 유리병 · 내용물 없음 · 파손 없음 | ① 내용물을 비우고 헹구기 ② 뚜껑 분리하기 (보증금 표시 소주·맥주병은 마트에 반환 가능) ③ 유리병류로 분리배출하기 |
+| G11 *(확장)* | 빈 우유팩 | FINAL / PAPER_PACK | 종이팩 분리배출 대상입니다. | 종이팩 (우유·주스팩) · 내용물 없음 | ① 내용물 비우기 ② 종이류와 섞지 말고 따로 모으기 ③ 종이팩 전용 배출함에 배출하기 (없으면 묶어서 배출) |
 
 **게이트 테스트:** 흐린 사진 → RESHOOT_QUALITY(quality) / 얼굴·송장 노출 → RESHOOT_QUALITY(privacy) / 판별 불가 물체 → UNKNOWN
 
