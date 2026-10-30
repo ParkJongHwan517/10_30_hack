@@ -163,7 +163,7 @@ AI 분석 결과
 | 프론트 | React 18 + Vite + TypeScript + Tailwind CSS (모바일 우선, 폰 폭 기준). 패키지 매니저 npm |
 | 백엔드 | FastAPI + Pydantic v2 (Python 3.12), 업로드는 `python-multipart` |
 | AI 비전 | **Google Gemini API** — 공식 SDK `google-genai`, 구조화 출력(`response_mime_type="application/json"` + `response_schema=Observation`) |
-| 모델 | 환경변수 `GEMINI_MODEL` (기본값 `gemini-3.8-flash`, 2.5는 사용 불가로 2026-10-30 변경). **A가 Google AI Studio에서 사용 가능한 모델인지 먼저 확인**하고, 지원 중단·변경 시 환경변수만 바꾼다 |
+| 모델 | 환경변수 `GEMINI_MODEL` (기본값 `gemini-3.1-flash-lite`. 3.6·3.8 Flash는 무료 키 하루 20회 한도라 하루 500회인 Lite 사용 — 2026-10-30 PR #19). **A가 Google AI Studio에서 사용 가능한 모델인지 먼저 확인**하고, 지원 중단·변경 시 환경변수만 바꾼다 |
 | DB | **Supabase(Postgres)** — 익명 분석 로그만(P1). **앱은 Supabase 없이도 동작해야 한다** |
 | 배포 | **Vercel 단일 프로젝트**: 프론트(정적 빌드) + `api/index.py`(FastAPI 서버리스 함수). 브랜치별 프리뷰 배포 |
 | 테스트 | 백엔드 `pytest`(규칙 엔진 G1~G7), 프론트 `eslint` + `tsc` |
@@ -190,7 +190,7 @@ AI 분석 결과
 | 이름 | 위치 | 설명 |
 |---|---|---|
 | `GEMINI_API_KEY` | 서버(Vercel, `.env.local`) | 필수 |
-| `GEMINI_MODEL` | 서버 | 기본 `gemini-3.8-flash` |
+| `GEMINI_MODEL` | 서버 | 기본 `gemini-3.1-flash-lite` |
 | `MOCK_VISION` | 서버 | `true`면 Gemini 대신 고정 관찰 JSON 반환(개발·쿼터 보호·데모 폴백) |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | 서버 | 선택(없으면 로깅 건너뜀) |
 | `VITE_API_BASE` | 프론트 | 기본 빈 값(같은 도메인). Render 분리 시에만 사용 |
@@ -702,7 +702,7 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 def observe(image_bytes: bytes) -> Observation:
     resp = client.models.generate_content(
-        model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
+        model=os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"),
         contents=[
             types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
             "이 사진의 쓰레기를 관찰해 JSON으로 보고하세요.",
