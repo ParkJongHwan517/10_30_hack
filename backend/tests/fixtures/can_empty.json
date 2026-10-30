@@ -1,0 +1,24 @@
+{
+  "item_type": "can",
+  "material_guess": "metal",
+  "is_transparent_colorless": "no",
+  "is_white": "unknown",
+  "contents_present": "no",
+  "contamination": {
+    "level": "none",
+    "type": "none",
+    "likely_removable_by_rinsing": "unknown"
+  },
+  "attachments": {
+    "label_present": "no",
+    "tape_present": "no",
+    "waybill_present": "no",
+    "lid_present": "no"
+  },
+  "damage": "none",
+  "coating_or_mixed_material": "no",
+  "privacy_flag": false,
+  "photo_quality": "good",
+  "confidence": 0.9,
+  "notes_ko": "음료 캔이며 내용물은 비어 있다."
+}

@@ -6,26 +6,17 @@ from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
-from ..models import ErrorResponse, Observation, ObserveResponse
+from ..models import ErrorResponse, ObserveResponse
 from ..services import mock_vision, vision
+from ..services.decide import gate_reason
 
 router = APIRouter()
 
 MAX_IMAGE_BYTES = 3 * 1024 * 1024  # §10: ≤ 3MB
-MIN_CONFIDENCE = 0.6  # §9.1 공통 게이트 2
 
 
 def _error(status: int, code: str, message: str) -> JSONResponse:
     return JSONResponse(status_code=status, content=ErrorResponse(code=code, message=message).model_dump())
-
-
-def _gate(obs: Observation) -> tuple[bool, str | None]:
-    """§9.1 공통 게이트 1·2 (3번 UNKNOWN은 decide 몫). 개인정보가 사진 품질보다 먼저."""
-    if obs.privacy_flag:
-        return False, "privacy"
-    if obs.photo_quality != "good" or obs.confidence < MIN_CONFIDENCE:
-        return False, "quality"
-    return True, None
 
 
 @router.post("/observe", response_model=ObserveResponse)
@@ -52,5 +43,5 @@ async def observe(
         except vision.VisionFailed:
             return _error(502, "AI_UNAVAILABLE", "AI 응답을 받을 수 없습니다.")
 
-    ok, reason = _gate(obs)
-    return ObserveResponse(observation=obs, ok=ok, reason=reason, demo_mode=demo_mode)  # type: ignore[arg-type]
+    reason = gate_reason(obs)  # §9.1 공통 게이트 1·2 — 기준(신뢰도 0.6·판정 순서)은 decide 한 곳에서 관리
+    return ObserveResponse(observation=obs, ok=reason is None, reason=reason, demo_mode=demo_mode)

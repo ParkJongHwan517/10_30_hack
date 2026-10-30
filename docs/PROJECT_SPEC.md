@@ -163,7 +163,7 @@ AI 분석 결과
 | 프론트 | React 18 + Vite + TypeScript + Tailwind CSS (모바일 우선, 폰 폭 기준). 패키지 매니저 npm |
 | 백엔드 | FastAPI + Pydantic v2 (Python 3.12), 업로드는 `python-multipart` |
 | AI 비전 | **Google Gemini API** — 공식 SDK `google-genai`, 구조화 출력(`response_mime_type="application/json"` + `response_schema=Observation`) |
-| 모델 | 환경변수 `GEMINI_MODEL` (기본값 `gemini-2.5-flash`). **A가 Google AI Studio에서 사용 가능한 모델인지 먼저 확인**하고, 지원 중단·변경 시 환경변수만 바꾼다 |
+| 모델 | 환경변수 `GEMINI_MODEL` (기본값 `gemini-3.8-flash`, 2.5는 사용 불가로 2026-10-30 변경). **A가 Google AI Studio에서 사용 가능한 모델인지 먼저 확인**하고, 지원 중단·변경 시 환경변수만 바꾼다 |
 | DB | **Supabase(Postgres)** — 익명 분석 로그만(P1). **앱은 Supabase 없이도 동작해야 한다** |
 | 배포 | **Vercel 단일 프로젝트**: 프론트(정적 빌드) + `api/index.py`(FastAPI 서버리스 함수). 브랜치별 프리뷰 배포 |
 | 테스트 | 백엔드 `pytest`(규칙 엔진 G1~G7), 프론트 `eslint` + `tsc` |
@@ -190,7 +190,7 @@ AI 분석 결과
 | 이름 | 위치 | 설명 |
 |---|---|---|
 | `GEMINI_API_KEY` | 서버(Vercel, `.env.local`) | 필수 |
-| `GEMINI_MODEL` | 서버 | 기본 `gemini-2.5-flash` |
+| `GEMINI_MODEL` | 서버 | 기본 `gemini-3.8-flash` |
 | `MOCK_VISION` | 서버 | `true`면 Gemini 대신 고정 관찰 JSON 반환(개발·쿼터 보호·데모 폴백) |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | 서버 | 선택(없으면 로깅 건너뜀) |
 | `VITE_API_BASE` | 프론트 | 기본 빈 값(같은 도메인). Render 분리 시에만 사용 |
@@ -293,6 +293,7 @@ class Observation(BaseModel):
 | `cardboard_box` | 음식물·기름 오염(`level≠none`, type∈{food,sauce,oil}) | `FINAL(GENERAL)` *(확장)* |
 | | `coating_or_mixed_material == "yes"` | `FINAL(GENERAL)` *(확장)* |
 | | 그 외 | `FINAL(PAPER)` |
+| `can` *(확장, 2026-10-30)* | 항상 (내용물·오염은 헹구면 됨) | `FINAL(CAN)` |
 
 - 재촬영 결과(`attempt==2`)에서 오염이 없으면 `FINAL(STYROFOAM)` 또는 `FINAL(PLASTIC)`, 오염 불릿은 **"음식물·소스 오염 없음 (세척 완료)"**.
 - "잘 모르겠어요"는 "아니요"와 동일하게 처리한다(보수적).
@@ -438,6 +439,7 @@ class Decision(BaseModel):
 | G5 | G4 후 재촬영, 깨끗한 스티로폼 (`attempt=2`) | FINAL / STYROFOAM | 스티로폼류 분리배출 대상입니다. | 스티로폼 용기 · 음식물·소스 오염 없음 (세척 완료) · 파손 없음 | ① 내용물을 완전히 비우고 세척하기 ② 테이프·운송장 제거하기 ③ 스티로폼류로 분리배출하기 |
 | G6 | 플라스틱 배달 용기, 깨끗함(PP 추정) | FINAL / PLASTIC | 플라스틱류 분리배출 대상입니다. | 플라스틱 배달 용기(PP 추정) · 오염 없음 (깨끗함) · 라벨·부착물 없음 · 파손 없음 | ① 내용물 비우기 ② 라벨·스티커 제거하기 ③ 플라스틱류로 분리배출하기 |
 | G7 | 택배 종이상자, 테이프 부착, 오염 없음 | FINAL / PAPER | 종이류 분리배출 대상입니다. | 종이상자 (골판지) · 테이프 부착 있음 · 오염 없음, 재활용 가능 | ① 테이프·송장 제거하기 ② 상자를 펼쳐 납작하게 하기 ③ 종이류로 분리배출하기 |
+| G8 *(확장)* | 빈 음료 캔 | FINAL / CAN | 캔류 분리배출 대상입니다. | 캔 (금속) · 내용물 없음 · 파손 없음 | ① 내용물을 비우고 헹구기 ② 플라스틱 뚜껑 등 다른 재질은 분리하기 ③ 캔류로 분리배출하기 |
 
 **게이트 테스트:** 흐린 사진 → RESHOOT_QUALITY(quality) / 얼굴·송장 노출 → RESHOOT_QUALITY(privacy) / 판별 불가 물체 → UNKNOWN
 
@@ -688,7 +690,7 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 def observe(image_bytes: bytes) -> Observation:
     resp = client.models.generate_content(
-        model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+        model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
         contents=[
             types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
             "이 사진의 쓰레기를 관찰해 JSON으로 보고하세요.",
