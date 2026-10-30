@@ -37,7 +37,7 @@ class Observation(BaseModel):
         "pet_bottle=음료·생수 페트병. "
         "styrofoam_container=발포 스티로폼(EPS)만: 표면에 작은 알갱이 무늬가 보이고 두껍고 가볍고 불투명하다. "
         "plastic_container=플라스틱 용기·트레이·컵·뚜껑: 얇고 매끈하거나 광택 있는 흰색 트레이도 여기에 넣는다. "
-        "cardboard_box=종이로 된 상자 전체: 택배 골판지 상자와 과자·제품 상자(얇은 판지)를 모두 포함한다. "
+        "cardboard_box=상자 모양의 종이: 택배 골판지 상자와 과자·제품 상자(얇은 판지). 컵홀더·종이 용기·종이 봉투처럼 상자가 아닌 종이는 other로 하고 material_guess를 paper로 쓴다. "
         "can=알루미늄·철로 된 음료·식품 캔. "
         "vinyl=비닐류: 과자·라면 봉지, 비닐봉지, 뽁뽁이(에어캡), 랩. "
         "glass_bottle=유리병. "
