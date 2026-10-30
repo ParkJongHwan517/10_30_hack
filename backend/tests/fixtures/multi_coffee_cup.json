@@ -1,0 +1,102 @@
+[
+  {
+    "item_type": "plastic_container",
+    "material_guess": "PET",
+    "is_transparent_colorless": "yes",
+    "is_white": "unknown",
+    "contents_present": "no",
+    "contamination": {
+      "level": "none",
+      "type": "none",
+      "likely_removable_by_rinsing": "unknown"
+    },
+    "attachments": {
+      "label_present": "no",
+      "tape_present": "no",
+      "waybill_present": "no",
+      "lid_present": "no"
+    },
+    "damage": "none",
+    "coating_or_mixed_material": "no",
+    "privacy_flag": false,
+    "photo_quality": "good",
+    "confidence": 0.9,
+    "notes_ko": "투명한 플라스틱 컵이며 내용물은 비어 있다.",
+    "label_ko": "컵 본체"
+  },
+  {
+    "item_type": "plastic_container",
+    "material_guess": "PET",
+    "is_transparent_colorless": "yes",
+    "is_white": "unknown",
+    "contents_present": "no",
+    "contamination": {
+      "level": "none",
+      "type": "none",
+      "likely_removable_by_rinsing": "unknown"
+    },
+    "attachments": {
+      "label_present": "no",
+      "tape_present": "no",
+      "waybill_present": "no",
+      "lid_present": "no"
+    },
+    "damage": "none",
+    "coating_or_mixed_material": "no",
+    "privacy_flag": false,
+    "photo_quality": "good",
+    "confidence": 0.9,
+    "notes_ko": "투명한 플라스틱 컵 뚜껑이다.",
+    "label_ko": "컵 뚜껑"
+  },
+  {
+    "item_type": "other",
+    "material_guess": "paper",
+    "is_transparent_colorless": "no",
+    "is_white": "unknown",
+    "contents_present": "no",
+    "contamination": {
+      "level": "none",
+      "type": "none",
+      "likely_removable_by_rinsing": "unknown"
+    },
+    "attachments": {
+      "label_present": "no",
+      "tape_present": "no",
+      "waybill_present": "no",
+      "lid_present": "no"
+    },
+    "damage": "none",
+    "coating_or_mixed_material": "no",
+    "privacy_flag": false,
+    "photo_quality": "good",
+    "confidence": 0.9,
+    "notes_ko": "종이로 된 컵홀더다.",
+    "label_ko": "종이 컵홀더"
+  },
+  {
+    "item_type": "small_plastic",
+    "material_guess": "PP",
+    "is_transparent_colorless": "no",
+    "is_white": "unknown",
+    "contents_present": "no",
+    "contamination": {
+      "level": "none",
+      "type": "none",
+      "likely_removable_by_rinsing": "unknown"
+    },
+    "attachments": {
+      "label_present": "no",
+      "tape_present": "no",
+      "waybill_present": "no",
+      "lid_present": "no"
+    },
+    "damage": "none",
+    "coating_or_mixed_material": "no",
+    "privacy_flag": false,
+    "photo_quality": "good",
+    "confidence": 0.7,
+    "notes_ko": "플라스틱 빨대다.",
+    "label_ko": "빨대"
+  }
+]
