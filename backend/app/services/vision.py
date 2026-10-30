@@ -16,7 +16,11 @@ from pydantic import TypeAdapter, ValidationError
 from ..models import Attachments, Contamination, Observation
 
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
-TIMEOUT_MS = 20_000  # §8.2 타임아웃 20초
+TIMEOUT_MS = 20_000  # §8.2 타임아웃 20초 (클라이언트 기본값, 시도별 타임아웃이 우선한다)
+# 시도별 타임아웃: 정상 응답은 대부분 3~7초(최대 약 11초)인데 가끔 응답이 멈춰서 20초를 다 쓰는 일이 있다.
+# 첫 시도를 일찍 끊고 재시도하면 최악의 대기가 41초 → 29초로 줄고, 멈춘 경우는 보통 20초 안에 끝난다.
+# (Gemini API는 10초 미만 데드라인을 400으로 거부한다 — 확인함)
+ATTEMPT_TIMEOUTS_MS = (13_000, 15_000)
 RETRY_DELAY_S = 1.0
 
 # docs/PROJECT_SPEC.md §8.1 그대로 사용 (수정은 P 승인, 문서와 같은 문구로 맞춘다)
@@ -30,7 +34,7 @@ SYSTEM_PROMPT = """당신은 "분리배출 사진 관찰기"입니다.
 4. 사람의 얼굴, 택배 송장의 이름·주소·전화번호 등 개인정보가 보이면 privacy_flag를 true로 하세요. 그 내용을 출력에 옮겨 적지 마세요.
 5. 제품의 브랜드명·상표는 기록하지 마세요.
 6. 출력은 지정된 스키마의 JSON 배열 하나뿐입니다. 설명 문장, 마크다운, 코드블록을 붙이지 마세요.
-7. 서로 다른 재질로 분리할 수 있는 구성품이 결합되어 있으면(예: 컵·뚜껑·빨대·종이 컵홀더) 구성품마다 별도 항목으로 보고하세요. 한 항목은 한 가지 재질만 가집니다. 큰 것부터 최대 6개까지 보고하세요.
+7. 항목은 '물건'이 아니라 '따로 버려야 하는 재질 단위'로 셉니다. 제품 포장은 포장재마다 별도 항목으로 보고하세요: 용기·본체, 캡·뚜껑, 포장 비닐·필름, 라벨, 빨대·컵홀더 등. 사진에 다른 물건이 함께 있어도 모든 물건에 똑같이 적용하세요. 예) 물티슈 → 물티슈 본체 + 플라스틱 캡 + 포장 비닐 / 컵 → 컵 본체 + 뚜껑 + 빨대 + 컵홀더. 큰 것부터 최대 6개까지 보고하세요.
 8. 재질 구분 단서: 종이는 무광·결·접힌 모서리, 스티로폼(EPS)은 거친 알갱이 무늬, 플라스틱은 매끈함·광택·이음선. 불분명하면 unknown으로 쓰세요.
 9. label_ko에는 브랜드 없이 짧은 이름(예: "컵 뚜껑")을 쓰세요."""
 
@@ -68,9 +72,10 @@ def _thinking(model: str) -> types.ThinkingConfig | None:
     return None
 
 
-def _config(model: str) -> types.GenerateContentConfig:
+def _config(model: str, timeout_ms: int | None = None) -> types.GenerateContentConfig:
     thinking = _thinking(model)
     return types.GenerateContentConfig(
+        http_options=types.HttpOptions(timeout=timeout_ms) if timeout_ms else None,
         system_instruction=SYSTEM_PROMPT,
         response_mime_type="application/json",
         response_schema=list[Observation],
@@ -100,13 +105,13 @@ def _fallback() -> Observation:
 _ITEMS = TypeAdapter(list[Observation])
 
 
-def _call(image_bytes: bytes, mime_type: str) -> list[Observation] | None:
+def _call(image_bytes: bytes, mime_type: str, timeout_ms: int) -> list[Observation] | None:
     """Gemini 1회 호출. 응답이 스키마에 맞지 않거나 항목이 하나도 없으면 None."""
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     resp = _get_client().models.generate_content(
         model=model,
         contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime_type), USER_PROMPT],
-        config=_config(model),
+        config=_config(model, timeout_ms),
     )
     items = resp.parsed
     if not (isinstance(items, list) and all(isinstance(o, Observation) for o in items)):
@@ -124,7 +129,7 @@ def observe(image_bytes: bytes, mime_type: str = "image/jpeg") -> list[Observati
     """
     for attempt in (1, 2):
         try:
-            items = _call(image_bytes, mime_type)
+            items = _call(image_bytes, mime_type, ATTEMPT_TIMEOUTS_MS[attempt - 1])
         except VisionFailed:
             raise
         except Exception as exc:  # noqa: BLE001 — SDK/네트워크 예외를 분류해 처리
