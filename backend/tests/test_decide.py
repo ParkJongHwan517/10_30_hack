@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from app.models import Observation
+from app.services import decide as decide_module
 from app.services.decide import decide
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -32,7 +33,7 @@ def test_g1_pet_clear():
     assert (d.kind, d.result_code) == ("FINAL", "PET_CLEAR")
     assert d.headline == "투명 페트병 별도배출 대상입니다."
     assert_bullets(d, ["페트병 (투명)", "라벨 부착 있음", "내용물 없음", "파손 없음"])
-    assert d.steps == ["내용물을 완전히 비우고 헹구기", "라벨 제거하기", "압착 후 투명 페트병으로 분리배출하기"]
+    assert d.steps == ["내용물을 완전히 비우고 헹구기", "라벨 제거하기", "찌그러뜨리고 뚜껑 닫아 투명 페트병 전용 수거함에 배출하기"]
     assert d.terminal
 
 
@@ -72,7 +73,7 @@ def test_g5_reshoot_clean_styrofoam():
     assert (d.kind, d.result_code) == ("FINAL", "STYROFOAM")
     assert d.headline == "스티로폼류 분리배출 대상입니다."
     assert_bullets(d, ["스티로폼 용기", "음식물·소스 오염 없음 (세척 완료)", "파손 없음"])
-    assert d.steps == ["내용물을 완전히 비우고 세척하기", "뚜껑 제거 후 건조하기", "부산시 스티로폼 기준에 따라 분리배출하기"]
+    assert d.steps == ["내용물을 완전히 비우고 세척하기", "테이프·운송장 제거하기", "스티로폼류로 분리배출하기"]
 
 
 def test_g5b_reshoot_still_dirty_is_general():
@@ -121,10 +122,19 @@ def test_gate_unknown_item():
     assert d.terminal
 
 
-# ---------- 미검증 규칙 표시 (§9.3, §13) ----------
+# ---------- 검증 여부 표시 (§9.3, §13) ----------
 
 
-def test_unverified_rules_basis_label_and_no_url():
+def test_verified_rules_basis_label_and_official_url():
+    d = decide(obs("pet_clear_label"), REGION, None, 1)
+    assert d.rules_verified is True
+    assert d.basis_label == "부산광역시 2026년 기준"
+    assert d.source.url is not None and d.source.url.startswith("https://www.busan.go.kr/")
+
+
+def test_unverified_rules_hide_url(monkeypatch):
+    rules = {**decide_module.load_rules(), "busan_verified": False}
+    monkeypatch.setattr(decide_module, "load_rules", lambda: rules)
     d = decide(obs("pet_clear_label"), REGION, None, 1)
     assert d.rules_verified is False
     assert d.basis_label == "시연용 규칙 기준"
