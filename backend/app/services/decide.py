@@ -4,6 +4,7 @@
 """
 
 import json
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
@@ -200,6 +201,15 @@ def load_districts() -> dict[str, Any]:
     return json.loads(DISTRICTS_PATH.read_text(encoding="utf-8"))
 
 
+_SCHEDULE = re.compile(r"요일|매일|격일")
+
+
+def strip_schedule(text: str) -> str:
+    """배출 요일 문구가 든 문장을 지운다. 배출 요일은 구가 아니라 동·권역별로 달라 틀린 안내가 될 수 있다(스펙 §4 범위 밖)."""
+    parts = re.split(r"(?<=[.。])\s+|\n|;", text)
+    return " ".join(p.strip() for p in parts if p.strip() and not _SCHEDULE.search(p))
+
+
 def district_info(gu: str, code: ResultCode | None) -> DistrictInfo | None:
     """판정한 결과 코드 → 구 데이터 분류로 연결. 일반폐기물(GENERAL)·위험물 등 대응 분류가 없으면 None.
 
@@ -211,11 +221,14 @@ def district_info(gu: str, code: ResultCode | None) -> DistrictInfo | None:
     rule = data["districts"].get(district_id, {}).get("rules", {}).get(category) if category and district_id else None
     if not rule:
         return None
+    prohibited, notes = strip_schedule(rule.get("prohibited_items", "")), strip_schedule(rule.get("special_notes", ""))
+    if not prohibited and not notes:
+        return None  # 요일 문구만 있던 경우 등 보여줄 내용이 없으면 블록 자체를 내리지 않는다
     link = data.get("verified_districts", {}).get(district_id)
     return DistrictInfo(
         gu=gu,
-        prohibited_items=rule.get("prohibited_items", ""),
-        special_notes=rule.get("special_notes", ""),
+        prohibited_items=prohibited,
+        special_notes=notes,
         verified=bool(link),
         source_label=f"{gu} 안내 (공식 확인)" if link else UNVERIFIED_LABEL.format(gu=gu),
         source_url=link or None,

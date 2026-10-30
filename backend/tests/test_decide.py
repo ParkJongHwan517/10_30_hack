@@ -364,3 +364,27 @@ def test_district_info_none_for_general_and_non_final():
 def test_district_info_never_exposes_disposal_method():
     info = decide(obs("pet_clear_label"), REGION, None, 1).district_info
     assert set(info.model_dump()) == {"gu", "prohibited_items", "special_notes", "verified", "source_label", "source_url"}
+
+
+def test_strip_schedule_removes_weekday_sentences_only():
+    assert decide_module.strip_schedule("수요일 문전 배출") == ""
+    assert decide_module.strip_schedule("월/수요일 지정 배출") == ""
+    assert decide_module.strip_schedule("월요일 배출. 헹군 후 펼쳐서 배출") == "헹군 후 펼쳐서 배출"
+    assert decide_module.strip_schedule("라벨 제거 필수") == "라벨 제거 필수"
+
+
+def test_district_info_never_contains_weekday_for_any_gu_and_category():
+    import re
+
+    data = decide_module.load_districts()
+    codes = [c for c, cat in data["result_code_to_category_id"].items() if cat]
+    for gu in data["gu_name_to_district_id"]:
+        for code in codes:
+            info = decide_module.district_info(gu, code)
+            if info:
+                assert not re.search(r"요일|매일|격일", info.prohibited_items + info.special_notes), (gu, code)
+
+
+def test_haeundae_demo_district_has_no_schedule_leak():
+    info = decide(obs("pet_clear_label"), REGION, None, 1).district_info
+    assert info is not None and "요일" not in info.special_notes
