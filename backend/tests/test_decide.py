@@ -404,3 +404,37 @@ def test_composite_note_absent_for_plain_and_split_items():
     assert COMPOSITE not in decide(obs("plastic_pp_clean"), REGION, None, 1).steps
     # AI가 포장 비닐을 따로 항목으로 쪼갠 경우(이름에 패키지·세트 없음) 중복 안내 없음
     assert COMPOSITE not in decide(obs("vinyl_clean", label_ko="포장 비닐"), REGION, None, 1).steps
+
+
+# ---------- 코팅 종이 이유 표시, 캡 보정 ----------
+
+
+def test_coated_paper_shows_reason_and_not_contradiction():
+    soiled = {"level": "light", "type": "food", "likely_removable_by_rinsing": "unknown"}
+    d = decide(obs("cardboard_tape", item_type="other", label_ko="코팅 종이 용기", coating_or_mixed_material="yes", contamination=soiled), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
+    assert "코팅된 종이 (종이류로 재활용되지 않아요)" in d.analysis_bullets and "음식물·기름 오염 있음" in d.analysis_bullets
+    assert d.steps == ["코팅된 종이는 종이류로 재활용되지 않아요", "종량제 봉투에 넣어 배출하기"]
+    assert d.source.url == "https://www.busan.go.kr/depart/ahwastepolicy09"
+
+
+def test_coated_clean_paper_has_no_recyclable_line():
+    d = decide(obs("cardboard_tape", item_type="other", coating_or_mixed_material="yes"), REGION, None, 1)
+    assert d.result_code == "GENERAL"
+    assert "오염 없음, 재활용 가능" not in d.analysis_bullets and "코팅된 종이 (종이류로 재활용되지 않아요)" in d.analysis_bullets
+
+
+def test_food_soiled_paper_without_coating_unchanged():
+    soiled = {"level": "light", "type": "oil", "likely_removable_by_rinsing": "unknown"}
+    d = decide(obs("cardboard_tape", contamination=soiled), REGION, None, 1)
+    assert d.result_code == "GENERAL" and "코팅된 종이 (종이류로 재활용되지 않아요)" not in d.analysis_bullets
+
+
+def test_cap_read_as_small_plastic_goes_to_plastic():
+    d = decide(obs("straw", label_ko="물티슈 캡", material_guess="PP"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "PLASTIC")
+    assert decide(obs("straw", label_ko="병뚜껑"), REGION, None, 1).result_code == "PLASTIC"
+
+
+def test_real_straw_still_general():
+    assert decide(obs("straw", label_ko="빨대"), REGION, None, 1).result_code == "GENERAL"
