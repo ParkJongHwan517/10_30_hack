@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import type { components } from '../lib/api-types'
 import type { Decision } from '../lib/api'
+import { isNotRecyclable } from '../lib/result'
 
 const GU_LIST: components['schemas']['Region']['gu'][] = [
   '강서구', '금정구', '기장군', '남구', '동구', '동래구', '부산진구', '북구',
@@ -70,7 +71,7 @@ export function CameraScreen({ previewUrl, loading, error, isReshoot, onFile, on
     <section className="screen-content">
       <p className="eyebrow">STEP 02 · PHOTO</p>
       <h1>{isReshoot ? '세척한 상태를 다시 촬영해주세요' : '버릴 물건을 촬영해주세요'}</h1>
-      <p className="screen-lead">쓰레기 하나만 크게 찍어주세요. 사람 얼굴이나 택배 송장의 이름·주소·전화번호가 보이지 않게 해주세요.</p>
+      <p className="screen-lead">버릴 쓰레기가 잘 보이게 찍어주세요. 컵·뚜껑·빨대처럼 붙어 있는 구성품은 각각 안내해 드려요. 사람 얼굴이나 택배 송장의 이름·주소·전화번호가 보이지 않게 해주세요.</p>
       <input ref={cameraInputRef} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={handleFileChange} />
       <input ref={galleryInputRef} className="visually-hidden" type="file" accept="image/*" onChange={handleFileChange} />
       {previewUrl ? (
@@ -189,7 +190,7 @@ export function WashGuideScreen({ decision, onRetake }: { decision: Decision; on
 }
 
 export function ResultScreen({ decision, demoMode, onRestart }: { decision: Decision; demoMode: boolean; onRestart: () => void }) {
-  const isGeneral = decision.result_code === 'GENERAL'
+  const isGeneral = isNotRecyclable(decision)
   return (
     <section className="screen-content result-screen">
       <p className="eyebrow">ANALYSIS COMPLETE</p>
