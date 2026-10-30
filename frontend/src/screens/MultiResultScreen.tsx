@@ -1,5 +1,6 @@
 import type { Decision, Observation } from '../lib/api'
 import { isNotRecyclable } from '../lib/result'
+import { DistrictGuide } from '../components/DistrictGuide'
 
 type Answer = 'yes' | 'no' | 'unknown'
 
@@ -119,6 +120,7 @@ function ItemCard({ index, item, count, onAnswer, onRetakeItem }: { index: numbe
       <p className="item-headline">{decision.headline}</p>
       {decision.analysis_bullets.length > 0 && <ul className="analysis-list">{decision.analysis_bullets.map((b, i) => <li key={`${b}-${i}`}>{b}</li>)}</ul>}
       <ol className="disposal-steps">{decision.steps.map((step, i) => <li key={`${step}-${i}`}><span>{i + 1}</span><p>{step}</p></li>)}</ol>
+      <DistrictGuide info={decision.district_info} />
       <p className="item-source">
         근거:{' '}
         {decision.source.url && decision.rules_verified
