@@ -161,6 +161,12 @@ def decide(
         case "small_plastic":
             # 부산시 안내엔 없음 → 환경부 공통 가이드라인: 작은 플라스틱은 선별이 안 돼 종량제
             return ctx.final("GENERAL", build_bullets(o), override=load_rules()["small_plastic"])
+        case "paper_pack":
+            # 부산시 종이류 안내: 종이팩은 종이류와 구분해 따로 배출
+            return ctx.final("PAPER_PACK", build_bullets(o))
+        case "receipt_coated_paper":
+            # 부산시 종이류 안내: 영수증·전표·코팅지는 종이류로 배출하면 안 되는 품목(종량제)
+            return ctx.final("GENERAL", build_bullets(o), override=load_rules()["receipt_coated_paper"])
         case "other" if o.material_guess == "paper":
             # AI가 과자 상자·종이 용기를 상자로 못 보고 other로 내도 재질이 종이면 종이 규칙을 적용한다
             return _paper(ctx, o)

@@ -67,6 +67,7 @@ def main() -> int:
             ("G8 캔", [("can_empty", 1, None, "FINAL", "CAN")]),
             ("G9 비닐", [("vinyl_clean", 1, None, "FINAL", "VINYL")]),
             ("G10 유리병", [("glass_bottle_empty", 1, None, "FINAL", "GLASS")]),
+            ("G11 종이팩", [("paper_pack_milk", 1, None, "FINAL", "PAPER_PACK")]),
         ]
         last = None
         for label, steps in scenarios:

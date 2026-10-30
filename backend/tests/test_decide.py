@@ -257,3 +257,23 @@ def test_photo_gate_main_item_quality_and_empty():
     cup[0] = cup[0].model_copy(update={"photo_quality": "blurry"})
     assert decide_module.photo_gate_reason(cup) == "quality"
     assert decide_module.photo_gate_reason([]) == "quality"
+
+
+# ---------- 종이팩·영수증 (부산시 종이류 안내) ----------
+
+
+def test_g11_paper_pack():
+    d = decide(obs("paper_pack_milk"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "PAPER_PACK")
+    assert d.headline == "종이팩 분리배출 대상입니다."
+    assert d.analysis_bullets == ["종이팩 (우유·주스팩)", "내용물 없음"]
+    assert d.steps[1] == "종이류와 섞지 말고 따로 모으기"
+
+
+def test_receipt_is_general_not_paper():
+    # 재질이 종이여도 영수증·코팅지는 종이류가 아니라 종량제
+    d = decide(obs("receipt"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
+    assert d.steps == ["영수증·전표·코팅된 종이는 종이류로 재활용되지 않아요", "종량제 봉투에 넣어 배출하기"]
+    assert d.source.label == "부산광역시 종이류 재활용품 분리배출 안내"
+    assert d.analysis_bullets[0] == "영수증·코팅된 종이"
