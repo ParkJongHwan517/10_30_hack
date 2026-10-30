@@ -161,6 +161,12 @@ def decide(
         case "small_plastic":
             # 부산시 안내엔 없음 → 환경부 공통 가이드라인: 작은 플라스틱은 선별이 안 돼 종량제
             return ctx.final("GENERAL", build_bullets(o), override=load_rules()["small_plastic"])
+        case "wet_tissue":
+            return ctx.final("GENERAL", build_bullets(o), override=load_rules()["wet_tissue"])
+        case "general_waste":
+            return ctx.final("GENERAL", build_bullets(o), override=load_rules()["general_waste"])
+        case "noncombustible_item":
+            return ctx.final("NONCOMBUSTIBLE", build_bullets(o), override=load_rules()["noncombustible_item"])
         case "paper_pack":
             # 부산시 종이류 안내: 종이팩은 종이류와 구분해 따로 배출
             return ctx.final("PAPER_PACK", build_bullets(o))
