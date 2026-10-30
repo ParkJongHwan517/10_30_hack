@@ -81,10 +81,16 @@ def _attachment_lines(o: Observation) -> list[str]:
     return lines
 
 
-def build_bullets(o: Observation, *, washed: bool = False, extra: str | None = None) -> list[str]:
+COATED_LINE = "코팅된 종이 (종이류로 재활용되지 않아요)"
+
+
+def build_bullets(o: Observation, *, washed: bool = False, extra: str | None = None, coated: bool = False) -> list[str]:
     """extra: 판단 사유 줄(예: "오염 제거 어려움 (사용자 답변)"). 있으면 파손 줄 대신 넣는다(이미지 ④-2 기준)."""
     item = _item_line(o)
     contamination = _contamination_line(o, washed)
+    if coated and _is_paper(o):
+        # 코팅이 일반폐기물인 이유. "오염 없음, 재활용 가능"과 모순되지 않게 오염 줄을 이 줄로 바꾸고, 오염도 있으면 함께 보여준다
+        contamination = COATED_LINE if o.contamination.level == "none" else f"{COATED_LINE}\n음식물·기름 오염 있음"
     attachments = _attachment_lines(o)
 
     if o.item_type in BOTTLE_LIKE or _is_paper(o):
@@ -99,4 +105,5 @@ def build_bullets(o: Observation, *, washed: bool = False, extra: str | None = N
     elif o.damage == "none" and not _is_paper(o) and o.item_type not in NO_DAMAGE_LINE:
         lines.append("파손 없음")
 
-    return [line for line in lines if line][:MAX_BULLETS]
+    flat = [part for line in lines if line for part in line.split("\n")]
+    return flat[:MAX_BULLETS]

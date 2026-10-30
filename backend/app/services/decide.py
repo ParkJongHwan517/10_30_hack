@@ -132,6 +132,10 @@ def _decide(
     if reason := gate_reason(o):
         return ctx.non_final("RESHOOT_QUALITY", RESHOOT_HEADLINE, False, reshoot_reason=reason)
 
+    if o.item_type == "small_plastic" and any(w in o.label_ko for w in CAP_WORDS):
+        # AI가 캡·뚜껑을 작은 플라스틱(빨대류)으로 넓게 읽는 경우 보정 — 부산시 안내는 뚜껑을 플라스틱류로 다룬다
+        o = o.model_copy(update={"item_type": "plastic_container"})
+
     match o.item_type:
         case "pet_bottle":
             code: ResultCode = "PET_CLEAR" if o.is_transparent_colorless == "yes" else "PLASTIC"
@@ -184,7 +188,10 @@ def _decide(
 def _paper(ctx: _Ctx, o: Observation) -> Decision:
     """음식물·기름 오염 또는 코팅이면 종량제, 아니면 종이류 (부산시 종이류 안내)."""
     food_soiled = o.contamination.level != "none" and o.contamination.type in FOOD_TYPES
-    if food_soiled or o.coating_or_mixed_material == "yes":
+    if o.coating_or_mixed_material == "yes":
+        # 부산시 종이류 안내: 코팅지(비닐·알루미늄 코팅, 방수코팅 포장박스)는 종량제. 이유가 카드에 보이게 코팅 줄과 전용 문구를 쓴다
+        return ctx.final("GENERAL", build_bullets(o, coated=True), override=load_rules()["coated_paper"])
+    if food_soiled:
         return ctx.final("GENERAL", build_bullets(o))
     if not is_box_like(o):
         # 컵홀더·종이 용기처럼 상자가 아닌 종이는 "상자를 펼쳐" 대신 일반 종이류 문구(AI가 cardboard_box로 내도 적용)
@@ -236,6 +243,7 @@ def district_info(gu: str, code: ResultCode | None) -> DistrictInfo | None:
 
 
 # 뚜껑·포장이 붙을 일이 없는 품목(휴지·기저귀, 도자기, 영수증, 빨대, 비닐 자체)은 분리 안내를 붙이지 않는다
+CAP_WORDS = ("캡", "뚜껑", "마개")
 NO_COMPOSITE_NOTE = {"general_waste", "noncombustible_item", "receipt_coated_paper", "small_plastic", "vinyl"}
 
 
