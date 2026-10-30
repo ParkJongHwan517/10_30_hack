@@ -11,7 +11,7 @@ from typing import Any
 import httpx
 from google import genai
 from google.genai import errors, types
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from ..models import Attachments, Contamination, Observation
 
@@ -19,9 +19,9 @@ DEFAULT_MODEL = "gemini-3.1-flash-lite"
 TIMEOUT_MS = 20_000  # §8.2 타임아웃 20초
 RETRY_DELAY_S = 1.0
 
-# §8.1 그대로 사용 (수정은 A 승인)
+# docs/PROJECT_SPEC.md §8.1 그대로 사용 (수정은 P 승인, 문서와 같은 문구로 맞춘다)
 SYSTEM_PROMPT = """당신은 "분리배출 사진 관찰기"입니다.
-사진에 보이는 쓰레기 하나에 대해 종류, 재질, 오염 및 부착물 상태를 관찰해 JSON으로만 보고합니다.
+사진에 보이는 분리배출 대상 각각에 대해 종류, 재질, 오염 및 부착물 상태를 관찰해 JSON으로만 보고합니다.
 
 규칙:
 1. 어떻게 버려야 하는지(배출 방법·분류)는 절대 판단하거나 언급하지 마세요. 그것은 다른 시스템이 합니다.
@@ -29,9 +29,13 @@ SYSTEM_PROMPT = """당신은 "분리배출 사진 관찰기"입니다.
 3. 사진이 흐리거나 어둡거나 대상이 일부만 보이면 photo_quality에 반영하고 confidence를 낮추세요.
 4. 사람의 얼굴, 택배 송장의 이름·주소·전화번호 등 개인정보가 보이면 privacy_flag를 true로 하세요. 그 내용을 출력에 옮겨 적지 마세요.
 5. 제품의 브랜드명·상표는 기록하지 마세요.
-6. 출력은 지정된 스키마의 JSON 객체 하나뿐입니다. 설명 문장, 마크다운, 코드블록을 붙이지 마세요."""
+6. 출력은 지정된 스키마의 JSON 배열 하나뿐입니다. 설명 문장, 마크다운, 코드블록을 붙이지 마세요.
+7. 서로 다른 재질로 분리할 수 있는 구성품이 결합되어 있으면(예: 컵·뚜껑·빨대·종이 컵홀더) 구성품마다 별도 항목으로 보고하세요. 한 항목은 한 가지 재질만 가집니다. 큰 것부터 최대 4개까지 보고하세요.
+8. 재질 구분 단서: 종이는 무광·결·접힌 모서리, 스티로폼(EPS)은 거친 알갱이 무늬, 플라스틱은 매끈함·광택·이음선. 불분명하면 unknown으로 쓰세요.
+9. label_ko에는 브랜드 없이 짧은 이름(예: "컵 뚜껑")을 쓰세요."""
 
-USER_PROMPT = "이 사진의 쓰레기를 관찰해 JSON으로 보고하세요."
+USER_PROMPT = "이 사진의 분리배출 대상을 구성품별로 관찰해 JSON 배열로 보고하세요."
+MAX_ITEMS = 4  # §8.1 규칙 7: 큰 것부터 최대 4개
 
 
 class VisionBusy(Exception):
@@ -69,7 +73,7 @@ def _config(model: str) -> types.GenerateContentConfig:
     return types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
         response_mime_type="application/json",
-        response_schema=Observation,
+        response_schema=list[Observation],
         temperature=0,
         thinking_config=thinking,
     )
@@ -93,28 +97,34 @@ def _fallback() -> Observation:
     )
 
 
-def _call(image_bytes: bytes, mime_type: str) -> Observation | None:
-    """Gemini 1회 호출. 응답이 스키마에 맞지 않으면 None."""
+_ITEMS = TypeAdapter(list[Observation])
+
+
+def _call(image_bytes: bytes, mime_type: str) -> list[Observation] | None:
+    """Gemini 1회 호출. 응답이 스키마에 맞지 않거나 항목이 하나도 없으면 None."""
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     resp = _get_client().models.generate_content(
         model=model,
         contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime_type), USER_PROMPT],
         config=_config(model),
     )
-    parsed = resp.parsed
-    if isinstance(parsed, Observation):
-        return parsed
-    try:
-        return Observation.model_validate_json(resp.text or "")
-    except (ValidationError, ValueError):
-        return None
+    items = resp.parsed
+    if not (isinstance(items, list) and all(isinstance(o, Observation) for o in items)):
+        try:
+            items = _ITEMS.validate_json(resp.text or "")
+        except (ValidationError, ValueError):
+            return None
+    return items or None
 
 
-def observe(image_bytes: bytes, mime_type: str = "image/jpeg") -> Observation:
-    """사진 1장 → Observation. 429·타임아웃은 1회 재시도 후 VisionBusy, 스키마 불일치는 1회 재시도 후 대체값."""
+def observe(image_bytes: bytes, mime_type: str = "image/jpeg") -> list[Observation]:
+    """사진 1장 → 항목별 Observation 목록(큰 것부터, 최대 4개).
+
+    429·타임아웃은 1회 재시도 후 VisionBusy, 스키마 불일치·빈 응답은 1회 재시도 후 대체값 1개를 돌려준다.
+    """
     for attempt in (1, 2):
         try:
-            obs = _call(image_bytes, mime_type)
+            items = _call(image_bytes, mime_type)
         except VisionFailed:
             raise
         except Exception as exc:  # noqa: BLE001 — SDK/네트워크 예외를 분류해 처리
@@ -124,7 +134,9 @@ def observe(image_bytes: bytes, mime_type: str = "image/jpeg") -> Observation:
                 time.sleep(RETRY_DELAY_S)
                 continue
             raise VisionFailed(str(type(exc).__name__)) from exc
-        if obs is not None:
-            obs.confidence = min(1.0, max(0.0, obs.confidence))  # 서버에서 0~1로 clamp
-            return obs
-    return _fallback()
+        if items is not None:
+            items = items[:MAX_ITEMS]
+            for o in items:
+                o.confidence = min(1.0, max(0.0, o.confidence))  # 서버에서 0~1로 clamp
+            return items
+    return [_fallback()]

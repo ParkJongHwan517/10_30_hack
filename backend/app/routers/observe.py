@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from ..models import ErrorResponse, ObserveResponse
 from ..services import mock_vision, vision
-from ..services.decide import gate_reason
+from ..services.decide import photo_gate_reason
 
 router = APIRouter()
 
@@ -34,14 +34,14 @@ async def observe(
 
     demo_mode = os.getenv("MOCK_VISION", "").lower() == "true"
     if demo_mode:
-        obs = mock_vision.mock_observation(is_reshoot)
+        items = mock_vision.mock_items(is_reshoot)
     else:
         try:
-            obs = await run_in_threadpool(vision.observe, data, "image/jpeg")
+            items = await run_in_threadpool(vision.observe, data, "image/jpeg")
         except vision.VisionBusy:
             return _error(503, "AI_BUSY", "잠시 후 다시 시도해주세요.")
         except vision.VisionFailed:
             return _error(502, "AI_UNAVAILABLE", "AI 응답을 받을 수 없습니다.")
 
-    reason = gate_reason(obs)  # §9.1 공통 게이트 1·2 — 기준(신뢰도 0.6·판정 순서)은 decide 한 곳에서 관리
-    return ObserveResponse(observation=obs, ok=reason is None, reason=reason, demo_mode=demo_mode)
+    reason = photo_gate_reason(items)  # 사진 단위 게이트: 개인정보는 어느 항목이든, 품질은 대표 항목(items[0])만
+    return ObserveResponse(observation=items[0], items=items, ok=reason is None, reason=reason, demo_mode=demo_mode)
