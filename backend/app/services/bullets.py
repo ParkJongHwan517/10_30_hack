@@ -10,6 +10,13 @@ BOTTLE_LIKE = ("pet_bottle", "can", "glass_bottle", "paper_pack")
 NO_DAMAGE_LINE = ("vinyl", "small_plastic", "paper_pack", "receipt_coated_paper")  # 파손 여부가 배출에 상관없는 품목  # 오염 대신 내용물 유무를 보여준다
 
 
+def is_box_like(o: Observation) -> bool:
+    """상자 문구("종이상자", "상자를 펼쳐")를 써도 되는 항목인지. AI가 컵홀더 등을 cardboard_box로 내는 경우를 거른다."""
+    if o.item_type != "cardboard_box":
+        return False
+    return not o.label_ko or any(w in o.label_ko for w in ("상자", "박스"))
+
+
 def _is_paper(o: Observation) -> bool:
     # decide와 같은 기준: AI가 other로 냈어도 재질이 종이면 종이로 다룬다
     return o.item_type == "cardboard_box" or (o.item_type == "other" and o.material_guess == "paper")
@@ -24,7 +31,7 @@ def _item_line(o: Observation) -> str | None:
         case "plastic_container":
             return "플라스틱 용기 (PP 추정)" if o.material_guess == "PP" else "플라스틱 용기"
         case "cardboard_box":
-            return "종이상자"
+            return "종이상자" if is_box_like(o) else (o.label_ko or "종이류")
         case "can":
             return "캔 (금속)"
         case "vinyl":

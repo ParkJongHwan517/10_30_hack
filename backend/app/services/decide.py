@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from ..models import Answers, Decision, Observation, Question, Region, ResultCode, Source
-from .bullets import build_bullets
+from .bullets import build_bullets, is_box_like
 
 RULES_PATH = Path(__file__).resolve().parent.parent / "rules" / "rules.busan.json"
 CONFIDENCE_THRESHOLD = 0.6
@@ -179,7 +179,7 @@ def _paper(ctx: _Ctx, o: Observation) -> Decision:
     food_soiled = o.contamination.level != "none" and o.contamination.type in FOOD_TYPES
     if food_soiled or o.coating_or_mixed_material == "yes":
         return ctx.final("GENERAL", build_bullets(o))
-    if o.item_type != "cardboard_box":
-        # 컵홀더·종이 용기처럼 상자가 아닌 종이는 "상자를 펼쳐" 대신 일반 종이류 문구
+    if not is_box_like(o):
+        # 컵홀더·종이 용기처럼 상자가 아닌 종이는 "상자를 펼쳐" 대신 일반 종이류 문구(AI가 cardboard_box로 내도 적용)
         return ctx.final("PAPER", build_bullets(o), override=load_rules()["paper_other"])
     return ctx.final("PAPER", build_bullets(o))
