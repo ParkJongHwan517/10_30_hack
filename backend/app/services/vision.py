@@ -15,7 +15,7 @@ from pydantic import ValidationError
 
 from ..models import Attachments, Contamination, Observation
 
-DEFAULT_MODEL = "gemini-3.8-flash"
+DEFAULT_MODEL = "gemini-3.1-flash-lite"
 TIMEOUT_MS = 20_000  # §8.2 타임아웃 20초
 RETRY_DELAY_S = 1.0
 
