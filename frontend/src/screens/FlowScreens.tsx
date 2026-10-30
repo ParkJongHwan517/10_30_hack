@@ -72,7 +72,8 @@ export function CameraScreen({ previewUrl, loading, error, isReshoot, onFile, on
     <section className="screen-content">
       <p className="eyebrow">STEP 02 · PHOTO</p>
       <h1>{isReshoot ? '세척한 상태를 다시 촬영해주세요' : '버릴 물건을 촬영해주세요'}</h1>
-      <p className="screen-lead">버릴 쓰레기가 잘 보이게 찍어주세요. 컵·뚜껑·빨대처럼 붙어 있는 구성품은 각각 안내해 드려요. 사람 얼굴이나 택배 송장의 이름·주소·전화번호가 보이지 않게 해주세요.</p>
+      <p className="screen-lead lead-has-note">버릴 쓰레기가 잘 보이게 찍어주세요. 컵·뚜껑·빨대처럼 붙어 있는 구성품은 각각 안내해 드려요. 사람 얼굴이나 택배 송장의 이름·주소·전화번호가 보이지 않게 해주세요.</p>
+      <p className="screen-lead lead-note">최대 6개까지 분석 가능합니다.</p>
       <input ref={cameraInputRef} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={handleFileChange} />
       <input ref={galleryInputRef} className="visually-hidden" type="file" accept="image/*" onChange={handleFileChange} />
       {previewUrl ? (
@@ -126,6 +127,7 @@ export function ObservingScreen({ previewUrl }: { previewUrl: string | null }) {
       <h1>AI가 사진을 분석하고 있습니다...</h1>
       <p className="screen-lead">사진에서 확인되는 종류와 상태를 살펴보고 있어요.</p>
       <div className="progress-check-list">{checks.map((label) => <div className="progress-check" key={label}><span className="mini-spinner" />{label}</div>)}</div>
+      <p className="muted-text wait-note">약 21초가 소요됩니다.</p>
     </section>
   )
 }
