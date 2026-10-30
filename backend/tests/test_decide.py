@@ -94,7 +94,7 @@ def test_g7_cardboard_tape():
     d = decide(obs("cardboard_tape"), REGION, None, 1)
     assert (d.kind, d.result_code) == ("FINAL", "PAPER")
     assert d.headline == "종이류 분리배출 대상입니다."
-    assert_bullets(d, ["종이상자 (골판지)", "테이프 부착 있음", "오염 없음, 재활용 가능"])
+    assert_bullets(d, ["종이상자", "테이프 부착 있음", "오염 없음, 재활용 가능"])
     assert d.steps == ["테이프·송장 제거하기", "상자를 펼쳐 납작하게 하기", "종이류로 분리배출하기"]
 
 
@@ -165,3 +165,52 @@ def test_can_with_contents_still_can():
     d = decide(obs("can_empty", contents_present="yes"), REGION, None, 1)
     assert (d.kind, d.result_code) == ("FINAL", "CAN")
     assert "내용물 있음" in d.analysis_bullets
+
+
+# ---------- 확장: 비닐·유리병·종이 보완 (부산시 2026 안내) ----------
+
+
+def test_g9_vinyl_clean():
+    d = decide(obs("vinyl_clean"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "VINYL")
+    assert d.headline == "비닐류 분리배출 대상입니다."
+    assert d.analysis_bullets == ["비닐류", "이물질 없음"]
+
+
+def test_vinyl_dirty_is_general():
+    dirty = {"level": "light", "type": "food", "likely_removable_by_rinsing": "unknown"}
+    d = decide(obs("vinyl_clean", contamination=dirty), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
+    assert "이물질 묻음" in d.analysis_bullets
+
+
+def test_g10_glass_bottle():
+    d = decide(obs("glass_bottle_empty"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "GLASS")
+    assert d.headline == "유리병류 분리배출 대상입니다."
+    assert d.analysis_bullets == ["유리병", "내용물 없음", "파손 없음"]
+
+
+def test_broken_glass_is_noncombustible():
+    d = decide(obs("glass_bottle_empty", damage="broken"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "NONCOMBUSTIBLE")
+    assert d.headline == "불연성 쓰레기 배출 대상입니다."
+    assert "깨짐 있음" in d.analysis_bullets
+
+
+def test_other_paper_falls_back_to_paper():
+    # 과자 상자·종이 용기를 AI가 other로 내도 재질이 종이면 종이류
+    d = decide(obs("cardboard_tape", item_type="other"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "PAPER")
+    assert d.analysis_bullets[0] == "종이류"
+
+
+def test_other_paper_with_food_is_general():
+    soiled = {"level": "light", "type": "oil", "likely_removable_by_rinsing": "unknown"}
+    d = decide(obs("cardboard_tape", item_type="other", contamination=soiled), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
+
+
+def test_other_non_paper_still_unknown():
+    d = decide(obs("pet_clear_label", item_type="other", material_guess="PP"), REGION, None, 1)
+    assert d.kind == "UNKNOWN"
