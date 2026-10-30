@@ -31,3 +31,35 @@ def test_decide_rejects_invalid_region():
         json={"region": {"sido": "부산광역시", "gu": "강남구"}, "observation": SAUCE, "attempt": 1},
     )
     assert r.status_code == 422
+
+
+def test_logs_only_terminal_results(monkeypatch):
+    from app.routers import decide as decide_router
+
+    calls = []
+    monkeypatch.setattr(decide_router, "log_decision", lambda **kw: calls.append(kw))
+
+    post(attempt=1)  # ASK_QUESTION → 기록 안 함
+    assert calls == []
+
+    post(attempt=1, answers={"contamination_removable": "no"}, demo_mode=True)  # FINAL → 1행
+    assert len(calls) == 1
+    assert calls[0] == {
+        "gu": "해운대구",
+        "item_type": "styrofoam_container",
+        "kind": "FINAL",
+        "result_code": "GENERAL",
+        "attempt": 1,
+        "photo_quality": "good",
+        "privacy_flag": False,
+        "rules_verified": True,
+        "demo_mode": True,
+    }
+
+
+def test_decide_works_without_supabase(monkeypatch):
+    monkeypatch.delenv("SUPABASE_URL", raising=False)
+    monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
+    r = post(attempt=1, answers={"contamination_removable": "no"})
+    assert r.status_code == 200
+    assert r.json()["kind"] == "FINAL"
