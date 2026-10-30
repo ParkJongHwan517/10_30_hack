@@ -302,3 +302,37 @@ def test_small_plastic_source_is_the_verified_one():
     d = decide(obs("straw"), REGION, None, 1)
     assert d.source.url == "https://mediahub.seoul.go.kr/archives/2003449"
     assert "부산시 안내에 없는" in d.source.label
+
+
+# ---------- 일반쓰레기·불연성 확장 (부산시 종이류·불연성 안내, 인천시 물티슈) ----------
+
+
+def test_wet_tissue_is_general_with_incheon_source():
+    d = decide(obs("wet_tissue"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
+    assert d.analysis_bullets == ["물티슈"]
+    assert d.steps[1] == "사용한 물티슈는 종량제 봉투에 넣어 배출하기"
+    assert d.source.label == "인천시 안내 참고 (부산시 안내에 없는 품목)"
+    assert d.source.url == "https://www.incheon.go.kr/infohub/HUB060901/3083791"
+
+
+def test_general_waste_diaper_uses_busan_source():
+    d = decide(obs("diaper"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
+    assert d.analysis_bullets == ["기저귀"]
+    assert d.steps == ["재활용되지 않는 일반쓰레기예요", "종량제 봉투에 넣어 배출하기"]
+    assert d.source.url == "https://www.busan.go.kr/depart/ahwastepolicy09"
+
+
+def test_noncombustible_ceramic():
+    d = decide(obs("ceramic_bowl"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "NONCOMBUSTIBLE")
+    assert d.headline == "불연성 쓰레기 배출 대상입니다."
+    assert d.analysis_bullets == ["사기그릇"]
+    assert d.steps[1] == "불연성 전용 종량제 마대에 담기"
+
+
+def test_unlisted_general_waste_stays_unknown():
+    # 근거를 확인하지 못한 품목(마스크·칫솔 등)은 지어내지 않고 판단 불가
+    d = decide(obs("wet_tissue", item_type="other", material_guess="PP"), REGION, None, 1)
+    assert d.kind == "UNKNOWN"
