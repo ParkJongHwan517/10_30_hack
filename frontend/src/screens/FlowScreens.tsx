@@ -3,6 +3,7 @@ import type { ChangeEvent } from 'react'
 import type { components } from '../lib/api-types'
 import type { Decision } from '../lib/api'
 import { isNotRecyclable } from '../lib/result'
+import { DistrictGuide } from '../components/DistrictGuide'
 
 const GU_LIST: components['schemas']['Region']['gu'][] = [
   '강서구', '금정구', '기장군', '남구', '동구', '동래구', '부산진구', '북구',
@@ -207,6 +208,7 @@ export function ResultScreen({ decision, demoMode, onRestart }: { decision: Deci
         <h2><span className="section-symbol">☷</span> 배출 방법</h2>
         {decision.steps.length ? <ol className="disposal-steps">{decision.steps.map((step, index) => <li key={`${step}-${index}`}><span>{index + 1}</span><p>{step}</p></li>)}</ol> : <p className="muted-text">표시할 배출 방법이 없습니다.</p>}
       </section>
+      <DistrictGuide info={decision.district_info} />
       <section className="source-panel">
         <h2><span className="section-symbol">↗</span> 근거 자료</h2>
         {decision.source.url && decision.rules_verified ? <a href={decision.source.url} target="_blank" rel="noreferrer">{decision.source.label} <span>↗</span></a> : <p>{decision.source.label}</p>}
