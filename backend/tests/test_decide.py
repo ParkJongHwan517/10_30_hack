@@ -214,3 +214,46 @@ def test_other_paper_with_food_is_general():
 def test_other_non_paper_still_unknown():
     d = decide(obs("pet_clear_label", item_type="other", material_guess="PP"), REGION, None, 1)
     assert d.kind == "UNKNOWN"
+
+
+# ---------- 여러 항목 (복합 쓰레기) ----------
+
+
+def items(name: str) -> list[Observation]:
+    data = json.loads((FIXTURES / f"{name}.json").read_text(encoding="utf-8"))
+    return [Observation.model_validate(o) for o in data]
+
+
+def test_straw_is_general_with_moe_source():
+    d = decide(obs("straw"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
+    assert d.steps == ["크기가 작아 재활용 선별이 되지 않아요", "종량제 봉투에 넣어 배출하기"]
+    assert d.source.label == "환경부 재활용품 분리배출 가이드라인"
+    assert d.analysis_bullets[0] == "작은 플라스틱 (빨대·일회용 수저 등)"
+
+
+def test_coffee_cup_each_item():
+    # 프론트가 항목마다 /api/decide를 부르는 방식과 같게, 항목별로 decide
+    got = [(o.label_ko, decide(o, REGION, None, 1).result_code) for o in items("multi_coffee_cup")]
+    assert got == [("컵 본체", "PLASTIC"), ("컵 뚜껑", "PLASTIC"), ("종이 컵홀더", "PAPER"), ("빨대", "GENERAL")]
+
+
+def test_photo_gate_privacy_any_item():
+    cup = items("multi_coffee_cup")
+    cup[3] = cup[3].model_copy(update={"privacy_flag": True})
+    assert decide_module.photo_gate_reason(cup) == "privacy"
+
+
+def test_photo_gate_ignores_low_confidence_small_item():
+    cup = items("multi_coffee_cup")
+    cup[3] = cup[3].model_copy(update={"confidence": 0.3})
+    assert decide_module.photo_gate_reason(cup) is None
+    # 그 항목은 항목별 decide에서만 다시 찍기
+    assert decide(cup[3], REGION, None, 1).kind == "RESHOOT_QUALITY"
+
+
+def test_photo_gate_main_item_quality_and_empty():
+    cup = items("multi_coffee_cup")
+    cup[0] = cup[0].model_copy(update={"photo_quality": "blurry"})
+    assert decide_module.photo_gate_reason(cup) == "quality"
+    assert decide_module.photo_gate_reason([]) == "quality"

@@ -31,9 +31,9 @@ class Observation(BaseModel):
     # description은 Gemini response_schema에 그대로 실려 분류 기준으로 쓰인다(값 목록은 API 계약)
     item_type: Literal[
         "pet_bottle", "styrofoam_container", "plastic_container", "cardboard_box", "can",
-        "vinyl", "glass_bottle", "other", "unknown",
+        "vinyl", "glass_bottle", "small_plastic", "other", "unknown",
     ] = Field(description=(
-        "가장 크게 보이는 쓰레기 하나의 종류. "
+        "이 항목(따로 버리는 물건·구성품 하나)의 종류. "
         "pet_bottle=음료·생수 페트병. "
         "styrofoam_container=발포 스티로폼(EPS)만: 표면에 작은 알갱이 무늬가 보이고 두껍고 가볍고 불투명하다. "
         "plastic_container=플라스틱 용기·트레이·컵·뚜껑: 얇고 매끈하거나 광택 있는 흰색 트레이도 여기에 넣는다. "
@@ -41,6 +41,7 @@ class Observation(BaseModel):
         "can=알루미늄·철로 된 음료·식품 캔. "
         "vinyl=비닐류: 과자·라면 봉지, 비닐봉지, 뽁뽁이(에어캡), 랩. "
         "glass_bottle=유리병. "
+        "small_plastic=빨대, 일회용 숟가락·포크·젓는 막대처럼 작은 플라스틱. "
         "other=위에 해당하지 않는 물체. unknown=무엇인지 판별할 수 없음."
     ))
     material_guess: Literal[
@@ -61,6 +62,10 @@ class Observation(BaseModel):
     photo_quality: Literal["good", "blurry", "dark", "partial"]
     confidence: float  # 0.0~1.0, 내부 판단용(화면 표시 금지). 서버에서 0~1로 clamp
     notes_ko: str  # 관찰 한 문장(판단·배출 방법 언급 금지)
+    label_ko: str = Field(
+        default="",
+        description="결과 카드 제목용 짧은 이름(예: '컵 뚜껑', '종이 컵홀더'). 브랜드·상표는 쓰지 않는다.",
+    )
 
 
 # ---------- 판단 (규칙 엔진이 만든다, §9.2) ----------
@@ -108,8 +113,12 @@ Gu = Literal[
 
 
 class ObserveResponse(BaseModel):
-    observation: Observation
-    ok: bool  # false = 공통 게이트(개인정보·사진 품질)에 걸림
+    observation: Observation  # 하위 호환: items[0]과 같은 값
+    # default_factory: 스키마에 default가 안 실려서 api-types에서 선택 필드(items?)가 된다 → 기존 프론트 코드가 안 깨진다
+    items: list[Observation] = Field(
+        default_factory=list, description="사진 속 항목(따로 버리는 물건·구성품)들, 큰 것부터 최대 4개. 프론트는 항목마다 /api/decide를 호출한다."
+    )
+    ok: bool  # false = 사진 단위 게이트(개인정보·대표 항목 품질)에 걸림 — services.decide.photo_gate_reason
     reason: Literal["quality", "privacy"] | None = None
     demo_mode: bool
 

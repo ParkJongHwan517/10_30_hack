@@ -30,6 +30,8 @@ def _item_line(o: Observation) -> str | None:
             return "비닐류"
         case "glass_bottle":
             return "유리병"
+        case "small_plastic":
+            return "작은 플라스틱 (빨대·일회용 수저 등)"
         case "other" if o.material_guess == "paper":
             return "종이류"
     return None
@@ -74,7 +76,7 @@ def build_bullets(o: Observation, *, washed: bool = False, extra: str | None = N
         lines.append(extra)
     elif o.item_type == "glass_bottle" and o.damage == "broken":
         lines.append("깨짐 있음")
-    elif o.damage == "none" and not _is_paper(o) and o.item_type != "vinyl":
+    elif o.damage == "none" and not _is_paper(o) and o.item_type not in ("vinyl", "small_plastic"):
         lines.append("파손 없음")
 
     return [line for line in lines if line][:MAX_BULLETS]

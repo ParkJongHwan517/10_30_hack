@@ -213,10 +213,10 @@ cd frontend && npm install && npm run dev            # Vite가 /api 를 localhos
 
 ## 8. AI 관찰(Gemini) 명세
 
-### 8.1 시스템 프롬프트 (그대로 사용, 수정은 A 승인)
+### 8.1 시스템 프롬프트 (그대로 사용, 수정은 P 승인 — 2026-10-30 여러 항목용으로 갱신)
 ```
 당신은 "분리배출 사진 관찰기"입니다.
-사진에 보이는 쓰레기 하나에 대해 종류, 재질, 오염 및 부착물 상태를 관찰해 JSON으로만 보고합니다.
+사진에 보이는 분리배출 대상 각각에 대해 종류, 재질, 오염 및 부착물 상태를 관찰해 JSON으로만 보고합니다.
 
 규칙:
 1. 어떻게 버려야 하는지(배출 방법·분류)는 절대 판단하거나 언급하지 마세요. 그것은 다른 시스템이 합니다.
@@ -224,7 +224,10 @@ cd frontend && npm install && npm run dev            # Vite가 /api 를 localhos
 3. 사진이 흐리거나 어둡거나 대상이 일부만 보이면 photo_quality에 반영하고 confidence를 낮추세요.
 4. 사람의 얼굴, 택배 송장의 이름·주소·전화번호 등 개인정보가 보이면 privacy_flag를 true로 하세요. 그 내용을 출력에 옮겨 적지 마세요.
 5. 제품의 브랜드명·상표는 기록하지 마세요.
-6. 출력은 지정된 스키마의 JSON 객체 하나뿐입니다. 설명 문장, 마크다운, 코드블록을 붙이지 마세요.
+6. 출력은 지정된 스키마의 JSON 배열 하나뿐입니다. 설명 문장, 마크다운, 코드블록을 붙이지 마세요.
+7. 서로 다른 재질로 분리할 수 있는 구성품이 결합되어 있으면(예: 컵·뚜껑·빨대·종이 컵홀더) 구성품마다 별도 항목으로 보고하세요. 한 항목은 한 가지 재질만 가집니다. 큰 것부터 최대 4개까지 보고하세요.
+8. 재질 구분 단서: 종이는 무광·결·접힌 모서리, 스티로폼(EPS)은 거친 알갱이 무늬, 플라스틱은 매끈함·광택·이음선. 불분명하면 unknown으로 쓰세요.
+9. label_ko에는 브랜드 없이 짧은 이름(예: "컵 뚜껑")을 쓰세요.
 ```
 
 ### 8.2 `Observation` (Pydantic — `backend/app/models.py`가 원본)
@@ -414,7 +417,9 @@ class Decision(BaseModel):
 
 ### `POST /api/observe`
 - `multipart/form-data`: `image`(JPEG, ≤ 3MB), `is_reshoot`(optional bool)
-- **200:** `{ observation: Observation, ok: bool, reason?: "quality" | "privacy", demo_mode: bool }`
+- **200:** `{ observation: Observation, items?: Observation[], ok: bool, reason?: "quality" | "privacy", demo_mode: bool }`
+  - *(2026-10-30 여러 항목)* `items` = 사진 속 항목들(큰 것부터 최대 4개), `observation` = `items[0]`(하위 호환). 프론트는 항목마다 `/api/decide`를 호출한다
+  - `ok/reason`은 `services.decide.photo_gate_reason(items)`: 개인정보는 어느 항목이든, 품질은 대표 항목(`items[0]`)만
   - `ok=false`는 §9.1 공통 게이트 1·2에 걸린 경우(서버가 판정)
   - `demo_mode=true`는 `MOCK_VISION`일 때(프론트는 작은 "데모 모드" 표시)
 - **에러:** `400`(이미지 없음/형식), `413`(용량), `503 AI_BUSY`(쿼터/타임아웃), `502`(AI 응답 불가), `500`

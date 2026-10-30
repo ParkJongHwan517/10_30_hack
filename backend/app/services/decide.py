@@ -41,6 +41,20 @@ def gate_reason(o: Observation) -> Literal["privacy", "quality"] | None:
     return None
 
 
+def photo_gate_reason(items: list[Observation]) -> Literal["privacy", "quality"] | None:
+    """사진 전체를 다시 찍게 할지 (/api/observe의 ok/reason, 여러 항목용).
+
+    개인정보는 어느 항목에서든 보이면 전체 재촬영. 품질은 대표 항목(items[0], 가장 큰 것)만 본다 —
+    빨대처럼 작은 구성품은 신뢰도가 낮게 나오기 쉬워서, 그 때문에 사진 전체를 막지 않는다.
+    작은 항목의 저품질은 항목별 /api/decide가 그 항목만 RESHOOT_QUALITY로 돌려준다.
+    """
+    if not items:
+        return "quality"
+    if any(o.privacy_flag for o in items):
+        return "privacy"
+    return gate_reason(items[0])
+
+
 def needs_question(o: Observation, answer: str | None, attempt: int) -> bool:
     return o.contamination.level != "none" and attempt == 1 and answer is None
 
@@ -58,8 +72,9 @@ class _Ctx:
         # 검증되지 않은 URL은 근거 링크로 걸지 않는다 (§13-2)
         return Source(label=rule["source_label"], url=rule["source_url"] if self.verified else None)
 
-    def final(self, code: ResultCode, bullets: list[str]) -> Decision:
-        rule = lookup_rule(code)
+    def final(self, code: ResultCode, bullets: list[str], override: dict[str, Any] | None = None) -> Decision:
+        """override: 같은 결과 코드라도 근거·배출 방법이 다른 경우(예: 작은 플라스틱 → 환경부 근거)."""
+        rule = {**lookup_rule(code), **(override or {})}
         return Decision(
             kind="FINAL",
             result_code=code,
@@ -67,7 +82,7 @@ class _Ctx:
             headline=rule["headline"],
             analysis_bullets=bullets,
             steps=rule["steps"],
-            source=self.source(code),
+            source=Source(label=rule["source_label"], url=rule["source_url"] if self.verified else None),
             rules_verified=self.verified,
             terminal=True,
         )
@@ -143,6 +158,9 @@ def decide(
             if o.damage == "broken":
                 return ctx.final("NONCOMBUSTIBLE", build_bullets(o))
             return ctx.final("GLASS", build_bullets(o))
+        case "small_plastic":
+            # 부산시 안내엔 없음 → 환경부 공통 가이드라인: 작은 플라스틱은 선별이 안 돼 종량제
+            return ctx.final("GENERAL", build_bullets(o), override=load_rules()["small_plastic"])
         case "other" if o.material_guess == "paper":
             # AI가 과자 상자·종이 용기를 상자로 못 보고 other로 내도 재질이 종이면 종이 규칙을 적용한다
             return _paper(ctx, o)
