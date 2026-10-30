@@ -228,7 +228,7 @@ def test_straw_is_general_with_moe_source():
     d = decide(obs("straw"), REGION, None, 1)
     assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
     assert d.steps == ["크기가 작아 재활용 선별이 되지 않아요", "종량제 봉투에 넣어 배출하기"]
-    assert d.source.label == "환경부 재활용품 분리배출 가이드라인"
+    assert d.source.label.startswith("서울시 ")
     assert d.analysis_bullets[0] == "작은 플라스틱 (빨대·일회용 수저 등)"
 
 
@@ -286,3 +286,19 @@ def test_non_box_paper_uses_general_paper_steps():
     assert d.steps == ["테이프·스프링 등 종이가 아닌 재질 제거하기", "이물질이 섞이지 않게 모으기", "종이류로 분리배출하기"]
     # 상자는 기존 문구 유지
     assert "상자를 펼쳐 납작하게 하기" in decide(obs("cardboard_tape"), REGION, None, 1).steps
+
+
+def test_cardboard_box_item_named_holder_uses_general_paper_text():
+    # 실제 Gemini가 종이 컵홀더를 cardboard_box로 내는 경우 — 상자 문구가 나오면 안 된다
+    d = decide(obs("cardboard_tape", label_ko="종이 컵홀더"), REGION, None, 1)
+    assert d.result_code == "PAPER"
+    assert d.analysis_bullets[0] == "종이 컵홀더"
+    assert d.steps == ["테이프·스프링 등 종이가 아닌 재질 제거하기", "이물질이 섞이지 않게 모으기", "종이류로 분리배출하기"]
+    # 이름에 상자가 들어가거나 이름이 없으면 기존 상자 문구
+    assert decide(obs("cardboard_tape", label_ko="택배 상자"), REGION, None, 1).steps[1] == "상자를 펼쳐 납작하게 하기"
+
+
+def test_small_plastic_source_is_the_verified_one():
+    d = decide(obs("straw"), REGION, None, 1)
+    assert d.source.url == "https://mediahub.seoul.go.kr/archives/2003449"
+    assert "부산시 안내에 없는" in d.source.label
