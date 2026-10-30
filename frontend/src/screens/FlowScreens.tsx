@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 import type { components } from '../lib/api-types'
 import type { Decision } from '../lib/api'
@@ -46,26 +46,40 @@ interface CameraScreenProps {
 }
 
 export function CameraScreen({ previewUrl, loading, error, isReshoot, onFile, onAnalyze, onBack, onClear }: CameraScreenProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+
+  useEffect(() => {
+    if (!pickerOpen) return
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setPickerOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [pickerOpen])
+
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) onFile(file)
     event.target.value = ''
   }
+  // 파일 입력은 사용자의 탭 안에서 바로 click()해야 브라우저가 막지 않는다
+  const openCamera = () => { setPickerOpen(false); cameraInputRef.current?.click() }
+  const openGallery = () => { setPickerOpen(false); galleryInputRef.current?.click() }
 
   return (
     <section className="screen-content">
       <p className="eyebrow">STEP 02 · PHOTO</p>
       <h1>{isReshoot ? '세척한 상태를 다시 촬영해주세요' : '버릴 물건을 촬영해주세요'}</h1>
       <p className="screen-lead">쓰레기 하나만 크게 찍어주세요. 사람 얼굴이나 택배 송장의 이름·주소·전화번호가 보이지 않게 해주세요.</p>
-      <input ref={inputRef} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={handleFileChange} />
+      <input ref={cameraInputRef} className="visually-hidden" type="file" accept="image/*" capture="environment" onChange={handleFileChange} />
+      <input ref={galleryInputRef} className="visually-hidden" type="file" accept="image/*" onChange={handleFileChange} />
       {previewUrl ? (
         <div className="preview-card">
           <img src={previewUrl} alt="업로드한 쓰레기 사진 미리보기" />
           <div className="preview-actions"><span className="file-status"><span className="status-dot" /> 사진이 준비되었습니다.</span><button className="text-button" onClick={onClear}>사진 삭제</button></div>
         </div>
       ) : (
-        <button className="upload-zone" onClick={() => inputRef.current?.click()} type="button">
+        <button className="upload-zone" onClick={() => setPickerOpen(true)} type="button">
           <span className="upload-icon"><svg viewBox="0 0 48 48" fill="none"><path d="M8 32V38a3 3 0 0 0 3 3h26a3 3 0 0 0 3-3v-6M24 32V7m0 0-9 9m9-9 9 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 25h8l4-6h10l4 6h8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" opacity=".55"/></svg></span>
           <strong>사진을 촬영하거나 업로드하세요</strong>
           <span>JPG, PNG · 긴 변 1280px로 자동 조정</span>
@@ -78,9 +92,24 @@ export function CameraScreen({ previewUrl, loading, error, isReshoot, onFile, on
         <button className="button button-ghost" onClick={onBack}>이전</button>
         <button className="button button-primary" disabled={!previewUrl || loading} onClick={onAnalyze}>{loading ? '사진 처리 중...' : 'AI 분석 시작하기'} <span>→</span></button>
       </div>
+
+      {pickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label="사진 가져오는 방법 선택">
+          <button type="button" aria-label="닫기" className="absolute inset-0 bg-black/40" onClick={() => setPickerOpen(false)} />
+          <div className="relative w-full max-w-md rounded-t-3xl bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl sm:rounded-3xl">
+            <p className="mb-3 text-center text-sm font-bold text-[#112d50]">사진을 어떻게 가져올까요?</p>
+            <div className="grid gap-2">
+              <button type="button" className="button button-primary button-wide" onClick={openCamera}>📷 사진 찍기</button>
+              <button type="button" className="button button-secondary button-wide" onClick={openGallery}>🖼️ 갤러리에서 선택하기</button>
+              <button type="button" className="button button-ghost button-wide" onClick={() => setPickerOpen(false)}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
+
 
 export function ObservingScreen({ previewUrl }: { previewUrl: string | null }) {
   const checks = ['물체 인식 중', '오염 상태 확인 중', '부착물 확인 중']
