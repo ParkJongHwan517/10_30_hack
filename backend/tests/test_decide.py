@@ -388,3 +388,9 @@ def test_district_info_never_contains_weekday_for_any_gu_and_category():
 def test_haeundae_demo_district_has_no_schedule_leak():
     info = decide(obs("pet_clear_label"), REGION, None, 1).district_info
     assert info is not None and "요일" not in info.special_notes
+
+
+def test_wet_tissue_steps_tell_cap_and_film_are_separated():
+    # AI가 물티슈 패키지를 통째로 한 항목으로 내도 캡·포장 비닐 분리 안내가 빠지지 않게 서버에서 고정
+    d = decide(obs("wet_tissue"), REGION, None, 1)
+    assert d.steps[-1] == "캡과 포장 비닐이 붙어 있으면 떼어서 캡은 플라스틱류, 비닐은 비닐류로 따로 배출하기"
