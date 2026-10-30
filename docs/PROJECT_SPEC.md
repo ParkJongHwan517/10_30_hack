@@ -303,6 +303,7 @@ class Observation(BaseModel):
 | | 그 외 | `FINAL(GLASS)` |
 | `paper_pack` *(확장)* | 항상 (종이류와 따로) | `FINAL(PAPER_PACK)` |
 | `wet_tissue` *(확장)* | 항상 | `FINAL(GENERAL)` — 근거: 인천시 공식 안내(2026-07-30), 부산시 안내에 없음 |
+| *(공통)* 복합 제품 | `material_guess=="mixed"` 또는 이름(`label_ko`)에 "패키지"·"세트" | 어떤 `FINAL`이든 배출 방법 끝에 "뚜껑·포장 비닐·라벨처럼 재질이 다른 부분이 붙어 있으면 떼어서 각각의 재질대로 분리배출하기" 한 줄 추가 |
 | `general_waste` *(확장)* | 항상 (사용한 휴지·폐휴지, 기저귀, 부직포, 벽지) | `FINAL(GENERAL)` — 부산시 종이류 안내 |
 | `noncombustible_item` *(확장)* | 항상 (사기그릇·도자기, 조개껍데기, 동물 뼈) | `FINAL(NONCOMBUSTIBLE)` — 부산시 불연성 안내 |
 | `receipt_coated_paper` *(확장)* | 항상 (영수증·전표·코팅지는 종이류 아님) | `FINAL(GENERAL)` |
