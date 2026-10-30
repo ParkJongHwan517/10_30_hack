@@ -31,7 +31,7 @@ class Observation(BaseModel):
     # description은 Gemini response_schema에 그대로 실려 분류 기준으로 쓰인다(값 목록은 API 계약)
     item_type: Literal[
         "pet_bottle", "styrofoam_container", "plastic_container", "cardboard_box", "can",
-        "vinyl", "glass_bottle", "small_plastic", "other", "unknown",
+        "vinyl", "glass_bottle", "small_plastic", "paper_pack", "receipt_coated_paper", "other", "unknown",
     ] = Field(description=(
         "이 항목(따로 버리는 물건·구성품 하나)의 종류. "
         "pet_bottle=음료·생수 페트병. "
@@ -42,6 +42,8 @@ class Observation(BaseModel):
         "vinyl=비닐류: 과자·라면 봉지, 비닐봉지, 뽁뽁이(에어캡), 랩. "
         "glass_bottle=유리병. "
         "small_plastic=빨대, 일회용 숟가락·포크·젓는 막대처럼 작은 플라스틱. "
+        "paper_pack=우유팩·주스팩·두유 멸균팩처럼 안쪽이 코팅된 음료용 종이팩(종이 상자와 구분). "
+        "receipt_coated_paper=영수증, 택배 전표, 라벨 스티커, 명함·사진, 금은박·비닐 코팅된 종이. "
         "other=위에 해당하지 않는 물체. unknown=무엇인지 판별할 수 없음."
     ))
     material_guess: Literal[
@@ -71,7 +73,9 @@ class Observation(BaseModel):
 # ---------- 판단 (규칙 엔진이 만든다, §9.2) ----------
 
 DecisionKind = Literal["ASK_QUESTION", "WASH_AND_RESHOOT", "FINAL", "RESHOOT_QUALITY", "UNKNOWN"]
-ResultCode = Literal["PET_CLEAR", "PLASTIC", "STYROFOAM", "PAPER", "CAN", "VINYL", "GLASS", "NONCOMBUSTIBLE", "GENERAL"]
+ResultCode = Literal[
+    "PET_CLEAR", "PLASTIC", "STYROFOAM", "PAPER", "PAPER_PACK", "CAN", "VINYL", "GLASS", "NONCOMBUSTIBLE", "GENERAL"
+]
 
 
 class QuestionOption(BaseModel):
