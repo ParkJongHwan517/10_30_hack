@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from ..models import Attachments, Contamination, Observation
 
+DEFAULT_MODEL = "gemini-3.8-flash"
 TIMEOUT_MS = 20_000  # §8.2 타임아웃 20초
 RETRY_DELAY_S = 1.0
 
@@ -54,8 +55,17 @@ def _get_client() -> genai.Client:
     return _client
 
 
+def _thinking(model: str) -> types.ThinkingConfig | None:
+    """20초 타임아웃 안에 들어오도록 thinking을 최소화한다. 모델 세대마다 파라미터가 다르다."""
+    if "gemini-3" in model:
+        return types.ThinkingConfig(thinking_level=types.ThinkingLevel.LOW)
+    if "2.5-flash" in model:
+        return types.ThinkingConfig(thinking_budget=0)
+    return None
+
+
 def _config(model: str) -> types.GenerateContentConfig:
-    thinking = types.ThinkingConfig(thinking_budget=0) if "2.5-flash" in model else None  # 지연 단축, 지원 모델만
+    thinking = _thinking(model)
     return types.GenerateContentConfig(
         system_instruction=SYSTEM_PROMPT,
         response_mime_type="application/json",
@@ -85,7 +95,7 @@ def _fallback() -> Observation:
 
 def _call(image_bytes: bytes, mime_type: str) -> Observation | None:
     """Gemini 1회 호출. 응답이 스키마에 맞지 않으면 None."""
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     resp = _get_client().models.generate_content(
         model=model,
         contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime_type), USER_PROMPT],
