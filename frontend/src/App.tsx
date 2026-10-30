@@ -6,7 +6,6 @@ import { getFixtureObserveResponse } from './lib/fixture-observations'
 import { resizeImage } from './lib/image'
 import { BrandHeader } from './components/BrandHeader'
 import { ProgressSteps } from './components/ProgressSteps'
-import { Disclaimer } from './components/Disclaimer'
 import { MultiResultScreen } from './screens/MultiResultScreen'
 import type { ItemResult } from './screens/MultiResultScreen'
 import {
@@ -293,7 +292,6 @@ export default function App() {
         </div>
         <div className="below-note"><span className="info-circle">i</span><p>AI는 사진에서 보이는 상태를 관찰하고, 최종 배출 판단은 부산 기준 규칙 엔진이 수행합니다.</p></div>
       </main>
-      <Disclaimer />
     </div>
   )
 }
