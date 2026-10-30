@@ -146,3 +146,22 @@ def test_gate_reason_shared_with_observe():
     assert decide_module.gate_reason(obs("pet_clear_label")) is None
     assert decide_module.gate_reason(obs("pet_clear_label", confidence=0.59)) == "quality"
     assert decide_module.gate_reason(obs("pet_clear_label", privacy_flag=True, photo_quality="dark")) == "privacy"
+
+
+# ---------- 확장: 캔 (부산시 캔류·고철 안내) ----------
+
+
+def test_g8_can():
+    d = decide(obs("can_empty"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "CAN")
+    assert d.headline == "캔류 분리배출 대상입니다."
+    assert d.analysis_bullets == ["캔 (금속)", "내용물 없음", "파손 없음"]
+    assert d.steps == ["내용물을 비우고 헹구기", "플라스틱 뚜껑 등 다른 재질은 분리하기", "캔류로 분리배출하기"]
+    assert d.source.url is not None
+
+
+def test_can_with_contents_still_can():
+    # 내용물이 남아 있어도 헹구면 되므로 질문 없이 캔류로 안내한다
+    d = decide(obs("can_empty", contents_present="yes"), REGION, None, 1)
+    assert (d.kind, d.result_code) == ("FINAL", "CAN")
+    assert "내용물 있음" in d.analysis_bullets

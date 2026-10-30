@@ -140,7 +140,7 @@ export interface components {
              */
             kind: "ASK_QUESTION" | "WASH_AND_RESHOOT" | "FINAL" | "RESHOOT_QUALITY" | "UNKNOWN";
             /** Result Code */
-            result_code?: ("PET_CLEAR" | "PLASTIC" | "STYROFOAM" | "PAPER" | "GENERAL") | null;
+            result_code?: ("PET_CLEAR" | "PLASTIC" | "STYROFOAM" | "PAPER" | "CAN" | "GENERAL") | null;
             /** Basis Label */
             basis_label: string;
             /** Headline */
@@ -182,12 +182,12 @@ export interface components {
              * Item Type
              * @enum {string}
              */
-            item_type: "pet_bottle" | "styrofoam_container" | "plastic_container" | "cardboard_box" | "other" | "unknown";
+            item_type: "pet_bottle" | "styrofoam_container" | "plastic_container" | "cardboard_box" | "can" | "other" | "unknown";
             /**
              * Material Guess
              * @enum {string}
              */
-            material_guess: "PET" | "EPS" | "PP" | "PS" | "paper" | "mixed" | "unknown";
+            material_guess: "PET" | "EPS" | "PP" | "PS" | "paper" | "metal" | "mixed" | "unknown";
             /**
              * Is Transparent Colorless
              * @enum {string}

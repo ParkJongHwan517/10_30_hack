@@ -293,6 +293,7 @@ class Observation(BaseModel):
 | `cardboard_box` | 음식물·기름 오염(`level≠none`, type∈{food,sauce,oil}) | `FINAL(GENERAL)` *(확장)* |
 | | `coating_or_mixed_material == "yes"` | `FINAL(GENERAL)` *(확장)* |
 | | 그 외 | `FINAL(PAPER)` |
+| `can` *(확장, 2026-10-30)* | 항상 (내용물·오염은 헹구면 됨) | `FINAL(CAN)` |
 
 - 재촬영 결과(`attempt==2`)에서 오염이 없으면 `FINAL(STYROFOAM)` 또는 `FINAL(PLASTIC)`, 오염 불릿은 **"음식물·소스 오염 없음 (세척 완료)"**.
 - "잘 모르겠어요"는 "아니요"와 동일하게 처리한다(보수적).
@@ -438,6 +439,7 @@ class Decision(BaseModel):
 | G5 | G4 후 재촬영, 깨끗한 스티로폼 (`attempt=2`) | FINAL / STYROFOAM | 스티로폼류 분리배출 대상입니다. | 스티로폼 용기 · 음식물·소스 오염 없음 (세척 완료) · 파손 없음 | ① 내용물을 완전히 비우고 세척하기 ② 테이프·운송장 제거하기 ③ 스티로폼류로 분리배출하기 |
 | G6 | 플라스틱 배달 용기, 깨끗함(PP 추정) | FINAL / PLASTIC | 플라스틱류 분리배출 대상입니다. | 플라스틱 배달 용기(PP 추정) · 오염 없음 (깨끗함) · 라벨·부착물 없음 · 파손 없음 | ① 내용물 비우기 ② 라벨·스티커 제거하기 ③ 플라스틱류로 분리배출하기 |
 | G7 | 택배 종이상자, 테이프 부착, 오염 없음 | FINAL / PAPER | 종이류 분리배출 대상입니다. | 종이상자 (골판지) · 테이프 부착 있음 · 오염 없음, 재활용 가능 | ① 테이프·송장 제거하기 ② 상자를 펼쳐 납작하게 하기 ③ 종이류로 분리배출하기 |
+| G8 *(확장)* | 빈 음료 캔 | FINAL / CAN | 캔류 분리배출 대상입니다. | 캔 (금속) · 내용물 없음 · 파손 없음 | ① 내용물을 비우고 헹구기 ② 플라스틱 뚜껑 등 다른 재질은 분리하기 ③ 캔류로 분리배출하기 |
 
 **게이트 테스트:** 흐린 사진 → RESHOOT_QUALITY(quality) / 얼굴·송장 노출 → RESHOOT_QUALITY(privacy) / 판별 불가 물체 → UNKNOWN
 

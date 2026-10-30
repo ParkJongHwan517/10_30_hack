@@ -29,12 +29,12 @@ class Attachments(BaseModel):
 
 class Observation(BaseModel):
     item_type: Literal[
-        "pet_bottle", "styrofoam_container", "plastic_container", "cardboard_box", "other", "unknown"
+        "pet_bottle", "styrofoam_container", "plastic_container", "cardboard_box", "can", "other", "unknown"
     ]
-    material_guess: Literal["PET", "EPS", "PP", "PS", "paper", "mixed", "unknown"]
+    material_guess: Literal["PET", "EPS", "PP", "PS", "paper", "metal", "mixed", "unknown"]
     is_transparent_colorless: Tri  # 페트병: 무색 투명 여부
     is_white: Tri  # 스티로폼: 흰색(유색 아님) 여부
-    contents_present: Tri  # 병/용기 안에 내용물이 남아 있는지
+    contents_present: Tri  # 병/캔/용기 안에 내용물이 남아 있는지
     contamination: Contamination
     attachments: Attachments
     damage: Literal["none", "broken", "crushed", "unknown"]
@@ -48,7 +48,7 @@ class Observation(BaseModel):
 # ---------- 판단 (규칙 엔진이 만든다, §9.2) ----------
 
 DecisionKind = Literal["ASK_QUESTION", "WASH_AND_RESHOOT", "FINAL", "RESHOOT_QUALITY", "UNKNOWN"]
-ResultCode = Literal["PET_CLEAR", "PLASTIC", "STYROFOAM", "PAPER", "GENERAL"]
+ResultCode = Literal["PET_CLEAR", "PLASTIC", "STYROFOAM", "PAPER", "CAN", "GENERAL"]
 
 
 class QuestionOption(BaseModel):
