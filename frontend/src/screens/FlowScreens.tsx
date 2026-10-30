@@ -190,12 +190,21 @@ export function WashGuideScreen({ decision, onRetake }: { decision: Decision; on
   )
 }
 
-export function ResultScreen({ decision, demoMode, onRestart }: { decision: Decision; demoMode: boolean; onRestart: () => void }) {
+export function ResultScreen({ decision, demoMode, previewUrl, onRestart }: { decision: Decision; demoMode: boolean; previewUrl: string | null; onRestart: () => void }) {
   const isGeneral = isNotRecyclable(decision)
   return (
     <section className="screen-content result-screen">
       <p className="eyebrow">ANALYSIS COMPLETE</p>
       {(!decision.rules_verified || demoMode) && <div className="result-badges">{!decision.rules_verified && <span className="badge badge-demo">시연용 규칙 · 부산시 공식 기준 대조 전</span>}{demoMode && <span className="badge badge-info">데모 모드</span>}</div>}
+      {previewUrl && (
+        <div className="multi-summary">
+          <img src={previewUrl} alt="분석한 쓰레기 사진" />
+          <div>
+            <h2 className="summary-title">사진에서 1개 항목을 찾았어요</h2>
+            <p className="screen-lead">분석한 사진 기준으로 배출 방법을 안내해요.</p>
+          </div>
+        </div>
+      )}
       <div className={`result-hero ${isGeneral ? 'result-general' : 'result-recycle'}`}>
         <span className="result-icon">{isGeneral ? '×' : '✓'}</span>
         <div><p>{decision.basis_label}</p><h1>{decision.headline}</h1></div>

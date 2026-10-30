@@ -282,7 +282,7 @@ export default function App() {
             {state.screen === 'QUESTION' && state.decision && <QuestionScreen decision={state.decision} answer={state.answer} onAnswer={(answer) => dispatch({ type: 'SET_ANSWER', answer })} onSubmit={() => void handleQuestionSubmit()} loading={busy} />}
             {state.screen === 'RULE_LOOKUP' && <RuleLookupScreen gu={state.gu} />}
             {state.screen === 'WASH_GUIDE' && state.decision && <WashGuideScreen decision={state.decision} onRetake={handleRetake} />}
-            {state.screen === 'RESULT' && state.decision && <ResultScreen decision={state.decision} demoMode={state.demoMode} onRestart={restart} />}
+            {state.screen === 'RESULT' && state.decision && <ResultScreen decision={state.decision} demoMode={state.demoMode} previewUrl={state.previewUrl} onRestart={restart} />}
             {state.screen === 'MULTI_RESULT' && <MultiResultScreen items={state.multiItems} previewUrl={state.previewUrl} demoMode={state.demoMode} onAnswer={(index, answer) => void answerItem(index, answer)} onRetakeItem={handleRetake} onRestart={restart} />}
             {state.screen === 'NOTICE_RESHOOT' && <ReshootNoticeScreen reason={state.reshootReason} canRetake={state.attempt === 1} onRetake={handleNoticeRetake} onRestart={restart} />}
             {state.screen === 'NOTICE_UNKNOWN' && <UnknownNoticeScreen onRestart={restart} />}

@@ -11,7 +11,7 @@ export function BrandHeader({ demoMode = false, onHome, gu }: BrandHeaderProps) 
         type="button"
         className="brand text-left rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2588ee]"
         onClick={onHome}
-        aria-label="버려도 돼? 처음으로"
+        aria-label="어디 버려 처음으로"
       >
         <span className="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 40 40" fill="none">
@@ -21,7 +21,7 @@ export function BrandHeader({ demoMode = false, onHome, gu }: BrandHeaderProps) 
           </svg>
         </span>
         <span className="brand-copy">
-          <strong>버려도 돼?</strong>
+          <strong>어디 버려</strong>
           <small>AI 기반 상태 분석형 분리배출 도우미</small>
         </span>
       </button>

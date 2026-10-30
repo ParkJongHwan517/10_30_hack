@@ -256,6 +256,8 @@ img, svg, video { max-width: 100%; }
 .multi-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
 .multi-summary img { width: 92px; height: 92px; flex: 0 0 auto; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); }
 .multi-summary .screen-lead { margin: 6px 0 0; }
+.summary-title { margin: 0; color: var(--navy); font-size: clamp(24px,3vw,30px); line-height: 1.35; letter-spacing: -.06em; }
+@media (max-width: 680px) { .summary-title { font-size: 23px; } }
 .multi-cards { display: grid; gap: 12px; margin-bottom: 22px; }
 .item-card { padding: 16px; border-radius: 14px; border: 1px solid var(--line); background: #fff; }
 .item-card header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
