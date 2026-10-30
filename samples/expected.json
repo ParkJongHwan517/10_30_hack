@@ -7,9 +7,15 @@
     {"file": "plastic_container.jpg", "expect": ["PLASTIC"], "note": "깨끗한 PP 배달 용기 (G6)"},
     {"file": "delivery_box.jpg", "expect": ["PAPER"], "note": "택배 상자, 송장은 떼거나 가리고 촬영 (G7)"},
     {"file": "can.jpg", "expect": ["CAN"], "note": "빈 음료 캔 (G8)"},
-    {"file": "coffee_cup.jpg", "expect": ["PLASTIC", "PLASTIC", "PAPER", "GENERAL"], "note": "테이크아웃 컵: 본체·뚜껑·종이 홀더·빨대"},
     {"file": "milk_pack.jpg", "expect": ["PAPER_PACK"], "note": "빈 우유팩 (G11)"},
-    {"file": "snack_box.jpg", "expect": ["PAPER"], "note": "과자 종이 박스 — 지금 오답이 나는 사진, 시연 제외 후보"},
-    {"file": "homerun_tray.jpg", "expect": ["PLASTIC"], "note": "과자 속 흰 플라스틱 트레이 — 스티로폼으로 오인식되는지 확인"}
+    {"file": "t02_snack_box.jpg", "expect": ["GENERAL"], "note": "직접 촬영: 홈런볼 속 코팅된 종이 용기(부스러기 약간). 코팅 종이는 종이류가 아니라 일반폐기물"},
+    {"file": "t05_white_tray.jpg", "expect": ["GENERAL"], "note": "직접 촬영: 홈런볼 속 코팅된 종이 용기(부스러기 약간). 코팅 종이는 종이류가 아니라 일반폐기물"},
+    {"file": "t06_coffee_cup.jpg", "expect": ["PLASTIC", "PLASTIC", "PAPER", "GENERAL"], "note": "직접 촬영: 테이크아웃 컵+뚜껑+빨대+종이 홀더"},
+    {"file": "t07_clear_lid_sauce.jpg", "expect": ["ASK_QUESTION"], "note": "직접 촬영: 투명 용기 뚜껑, 소스 자국"},
+    {"file": "t08_clear_container_sauce.jpg", "expect": ["ASK_QUESTION"], "note": "직접 촬영: 투명 용기, 양념 잔여물 많음(상표 일부 노출, 로컬 전용)"},
+    {"file": "t09_container_spoon.jpg", "expect": ["ASK_QUESTION", "GENERAL"], "note": "직접 촬영: 양념 묻은 용기 + 검은 일회용 숟가락"},
+    {"file": "t10_spoon.jpg", "expect": ["GENERAL"], "note": "직접 촬영: 손에 든 검은 일회용 숟가락"},
+    {"file": "t11_wet_tissue_cans.jpg", "expect": ["PLASTIC", "VINYL", "CAN", "CAN", "CAN"], "note": "직접 촬영: 물티슈(캡+포장 비닐) + 캔 3개 (상표·노트북 화면 노출, 로컬 전용)"},
+    {"file": "t12_cardboard_box.jpg", "expect": ["PAPER"], "note": "직접 촬영: 열린 골판지 상자(송장 없음)"}
   ]
 }
