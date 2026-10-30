@@ -9,6 +9,7 @@ const stepByScreen: Record<string, number> = {
   RULE_LOOKUP: 3,
   WASH_GUIDE: 3,
   RESULT: 3,
+  MULTI_RESULT: 3,
   NOTICE_UNKNOWN: 3,
   ERROR: 2,
 }

@@ -254,3 +254,25 @@ img, svg, video { max-width: 100%; }
   .header-badges { flex: 0 1 auto; min-width: 0; }
   .region-badge { white-space: normal; }
 }
+/* 여러 항목 결과 카드 */
+.multi-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.multi-summary img { width: 92px; height: 92px; flex: 0 0 auto; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); }
+.multi-summary .screen-lead { margin: 6px 0 0; }
+.multi-cards { display: grid; gap: 12px; margin-bottom: 22px; }
+.item-card { padding: 16px; border-radius: 14px; border: 1px solid var(--line); background: #fff; }
+.item-card header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.item-card header strong { color: var(--navy); font-size: 15px; }
+.item-index { width: 26px; height: 26px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; color: #fff; font-size: 12px; font-weight: 800; background: #90a0b2; }
+.item-headline { margin: 0 0 10px; font-size: 14px; font-weight: 750; }
+.item-recycle { background: #f3fbf7; border-color: #c9ebd9; }
+.item-recycle .item-index { background: var(--green); }
+.item-recycle .item-headline { color: #176f4e; }
+.item-general { background: #fff6f7; border-color: #f4d0d4; }
+.item-general .item-index { background: var(--red); }
+.item-general .item-headline { color: #a83542; }
+.item-warning { background: #fffaf0; border-color: #f1dfc1; }
+.item-warning .item-index { background: var(--orange); }
+.item-muted { background: #f6f8fb; }
+.item-options { display: grid; gap: 8px; }
+.item-source { margin: 10px 0 0; color: var(--muted); font-size: 11px; }
+.item-source a { color: var(--blue-dark); }
