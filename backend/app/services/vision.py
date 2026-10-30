@@ -6,6 +6,7 @@ AI는 관찰만 한다 — 배출 방법 판단은 규칙 엔진(decide)이 한�
 
 import os
 import time
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from typing import Any
 
 import httpx
@@ -20,7 +21,8 @@ TIMEOUT_MS = 20_000  # §8.2 타임아웃 20초 (클라이언트 기본값, 시�
 # 시도별 타임아웃: 정상 응답은 대부분 3~7초(최대 약 11초)인데 가끔 응답이 멈춰서 20초를 다 쓰는 일이 있다.
 # 첫 시도를 일찍 끊고 재시도하면 최악의 대기가 41초 → 29초로 줄고, 멈춘 경우는 보통 20초 안에 끝난다.
 # (Gemini API는 10초 미만 데드라인을 400으로 거부한다 — 확인함)
-ATTEMPT_TIMEOUTS_MS = (13_000, 15_000)
+ATTEMPT_TIMEOUTS_MS = (13_000, 13_000)
+HEDGE_AFTER_S = 8.0  # 첫 호출이 이만큼 안 끝나면 같은 요청을 하나 더 보낸다(정상 응답은 대부분 3~7초)
 RETRY_DELAY_S = 1.0
 
 # docs/PROJECT_SPEC.md §8.1 그대로 사용 (수정은 P 승인, 문서와 같은 문구로 맞춘다)
@@ -122,26 +124,61 @@ def _call(image_bytes: bytes, mime_type: str, timeout_ms: int) -> list[Observati
     return items or None
 
 
+def _finish(items: list[Observation]) -> list[Observation]:
+    items = items[:MAX_ITEMS]
+    for o in items:
+        o.confidence = min(1.0, max(0.0, o.confidence))  # 서버에서 0~1로 clamp
+    return items
+
+
 def observe(image_bytes: bytes, mime_type: str = "image/jpeg") -> list[Observation]:
     """사진 1장 → 항목별 Observation 목록(큰 것부터, 최대 6개).
 
-    429·타임아웃은 1회 재시도 후 VisionBusy, 스키마 불일치·빈 응답은 1회 재시도 후 대체값 1개를 돌려준다.
+    Gemini가 가끔 20초 넘게 멈추므로 **헤징**한다: 첫 호출이 HEDGE_AFTER_S초 안에 안 끝나면 같은 요청을 하나 더
+    보내서 먼저 성공하는 쪽을 쓴다. 첫 호출이 429·503·타임아웃으로 빨리 실패해도 바로 둘째를 보낸다(재시도).
+    둘 다 실패하면 VisionBusy(최악 약 21초), 스키마 불일치·빈 응답이 반복되면 대체값 1개를 돌려준다.
     """
-    for attempt in (1, 2):
-        try:
-            items = _call(image_bytes, mime_type, ATTEMPT_TIMEOUTS_MS[attempt - 1])
-        except VisionFailed:
-            raise
-        except Exception as exc:  # noqa: BLE001 — SDK/네트워크 예외를 분류해 처리
-            if _is_busy(exc):
-                if attempt == 2:
-                    raise VisionBusy(str(type(exc).__name__)) from exc
-                time.sleep(RETRY_DELAY_S)
+    pool = ThreadPoolExecutor(max_workers=2)  # with 블록을 쓰지 않는다: 늦은 쪽을 기다리지 않고 바로 반환한다
+    pending: set[Future] = set()
+    started = 0
+    last_busy: Exception | None = None
+    bad_replies = 0
+
+    def launch() -> None:
+        nonlocal started
+        pending.add(pool.submit(_call, image_bytes, mime_type, ATTEMPT_TIMEOUTS_MS[min(started, 1)]))
+        started += 1
+
+    try:
+        launch()
+        hedge_at = time.monotonic() + HEDGE_AFTER_S
+        while pending:
+            wait_s = max(0.0, hedge_at - time.monotonic()) if started < 2 else None
+            done, _ = wait(pending, timeout=wait_s, return_when=FIRST_COMPLETED)
+            if not done:  # 첫 호출이 느리다 → 둘째를 같이 보낸다
+                launch()
                 continue
-            raise VisionFailed(str(type(exc).__name__)) from exc
-        if items is not None:
-            items = items[:MAX_ITEMS]
-            for o in items:
-                o.confidence = min(1.0, max(0.0, o.confidence))  # 서버에서 0~1로 clamp
-            return items
-    return [_fallback()]
+            for fut in done:
+                pending.discard(fut)
+                try:
+                    items = fut.result()
+                except VisionFailed:
+                    raise
+                except Exception as exc:  # noqa: BLE001 — SDK/네트워크 예외를 분류해 처리
+                    if not _is_busy(exc):
+                        raise VisionFailed(str(type(exc).__name__)) from exc
+                    last_busy = exc
+                    if started < 2 and not pending:
+                        time.sleep(RETRY_DELAY_S)
+                        launch()
+                    continue
+                if items is not None:
+                    return _finish(items)
+                bad_replies += 1
+                if started < 2 and not pending:
+                    launch()
+        if last_busy is not None and bad_replies == 0:
+            raise VisionBusy(str(type(last_busy).__name__)) from last_busy
+        return [_fallback()]
+    finally:
+        pool.shutdown(wait=False)

@@ -265,7 +265,7 @@ class Observation(BaseModel):
     notes_ko: str                     # 관찰 한 문장(판단·배출 방법 언급 금지)
 ```
 - 프론트의 `Observation` 타입은 이 모델에서 **생성**한다(§14 계약 동기화).
-- Gemini 호출: `temperature=0`, 시도별 타임아웃 13초·15초(최악 약 29초, Gemini는 10초 미만 데드라인을 거부). 응답은 `response.parsed`(Pydantic)로 받고, 검증 실패 시 1회 재시도 후 `photo_quality="partial"`, `confidence=0`으로 대체해 "다시 촬영" 경로로 보낸다. 지연이 길면 `thinking_budget=0` 같은 설정을 모델이 지원하는 범위에서 검토한다.
+- Gemini 호출: `temperature=0`, 시도별 타임아웃 13초 + 헤징(첫 호출이 8초 안에 안 끝나면 같은 요청을 하나 더 보내 먼저 성공한 쪽을 쓴다, 최악 약 21초, Gemini는 10초 미만 데드라인을 거부). 응답은 `response.parsed`(Pydantic)로 받고, 검증 실패 시 1회 재시도 후 `photo_quality="partial"`, `confidence=0`으로 대체해 "다시 촬영" 경로로 보낸다. 지연이 길면 `thinking_budget=0` 같은 설정을 모델이 지원하는 범위에서 검토한다.
 - **`RESOURCE_EXHAUSTED`(429)·타임아웃** → 1회 짧게 재시도 후 `503 AI_BUSY`. 프론트는 "잠시 후 다시 시도해주세요" 화면(§5.2)을 보여준다.
 
 ---
@@ -615,7 +615,7 @@ cd frontend && npx openapi-typescript http://localhost:8000/openapi.json -o src/
 | 리스크 | 대응 |
 |---|---|
 | **Gemini 쿼터 소진(5명이 한 프로젝트 쿼터 공유)** | 개발은 `MOCK_VISION=true`, 실제 호출은 프롬프트 검증·스모크 테스트만. 호출 수를 줄이려 같은 사진 반복 테스트 금지. 발표 당일 아침 쿼터 확인, **`MOCK_VISION`/데모 모드로 폴백**(화면에 "데모 모드" 표시) |
-| Gemini 지연/실패 | 시도별 타임아웃 13/15초 + 1회 재시도 + `AI_BUSY` 안내, 시연 영상 폴백 |
+| Gemini 지연/실패 | 시도별 타임아웃 13초 + 헤징(8초 후 둘째 호출) + `AI_BUSY` 안내, 시연 영상 폴백 |
 | Vercel Python 함수 배포 문제 | 15:30 첫 배포 검증, 16:00 안 되면 백엔드만 Render로 분리(`VITE_API_BASE`) |
 | Gemini 모델명 변경·중단 | `GEMINI_MODEL` 환경변수로 교체, A가 사전에 확인 |
 | 현장 네트워크 불안 | 시연 영상 필수, 샘플 사진은 클라우드와 USB 양쪽 보관 |
