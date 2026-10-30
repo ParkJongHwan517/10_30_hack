@@ -165,6 +165,34 @@ export interface components {
             rules_verified: boolean;
             /** Terminal */
             terminal: boolean;
+            district_info?: components["schemas"]["DistrictInfo"] | null;
+        };
+        /**
+         * DistrictInfo
+         * @description 구·군별 참고 안내(팀 조사 기준). 부산시 공식 기준을 대체하지 않고 따로 보여준다.
+         */
+        DistrictInfo: {
+            /** Gu */
+            gu: string;
+            /**
+             * Prohibited Items
+             * @default
+             */
+            prohibited_items: string;
+            /**
+             * Special Notes
+             * @default
+             */
+            special_notes: string;
+            /**
+             * Verified
+             * @default false
+             */
+            verified: boolean;
+            /** Source Label */
+            source_label: string;
+            /** Source Url */
+            source_url?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
