@@ -1,11 +1,17 @@
 """결과 화면 "AI 분석 결과" 불릿 생성 (PROJECT_SPEC §9.4). 담당: P.
 
-줄 순서는 디자인 이미지 ④를 따른다: 페트병·캔·종이상자는 부착물이 오염보다 먼저, 용기류는 오염이 먼저.
+줄 순서는 디자인 이미지 ④를 따른다: 병·캔·종이류는 부착물이 오염보다 먼저, 용기·비닐은 오염이 먼저.
 """
 
 from ..models import Observation
 
 MAX_BULLETS = 4
+BOTTLE_LIKE = ("pet_bottle", "can", "glass_bottle")  # 오염 대신 내용물 유무를 보여준다
+
+
+def _is_paper(o: Observation) -> bool:
+    # decide와 같은 기준: AI가 other로 냈어도 재질이 종이면 종이로 다룬다
+    return o.item_type == "cardboard_box" or (o.item_type == "other" and o.material_guess == "paper")
 
 
 def _item_line(o: Observation) -> str | None:
@@ -17,18 +23,26 @@ def _item_line(o: Observation) -> str | None:
         case "plastic_container":
             return "플라스틱 배달 용기(PP 추정)" if o.material_guess == "PP" else "플라스틱 배달 용기"
         case "cardboard_box":
-            return "종이상자 (골판지)"
+            return "종이상자"
         case "can":
             return "캔 (금속)"
+        case "vinyl":
+            return "비닐류"
+        case "glass_bottle":
+            return "유리병"
+        case "other" if o.material_guess == "paper":
+            return "종이류"
     return None
 
 
 def _contamination_line(o: Observation, washed: bool) -> str | None:
-    if o.item_type in ("pet_bottle", "can"):
+    if o.item_type in BOTTLE_LIKE:
         return "내용물 있음" if o.contents_present == "yes" else "내용물 없음"
     clean = o.contamination.level == "none"
-    if o.item_type == "cardboard_box":
+    if _is_paper(o):
         return "오염 없음, 재활용 가능" if clean else "음식물·기름 오염 있음"
+    if o.item_type == "vinyl":
+        return "이물질 없음" if clean else "이물질 묻음"
     if clean:
         return "음식물·소스 오염 없음 (세척 완료)" if washed else "오염 없음 (깨끗함)"
     return "음식물·소스 오염 있음"
@@ -51,14 +65,16 @@ def build_bullets(o: Observation, *, washed: bool = False, extra: str | None = N
     contamination = _contamination_line(o, washed)
     attachments = _attachment_lines(o)
 
-    if o.item_type in ("pet_bottle", "can", "cardboard_box"):
+    if o.item_type in BOTTLE_LIKE or _is_paper(o):
         lines = [item, *attachments, contamination]
     else:
         lines = [item, contamination, *attachments]
 
     if extra:
         lines.append(extra)
-    elif o.damage == "none" and o.item_type != "cardboard_box":
+    elif o.item_type == "glass_bottle" and o.damage == "broken":
+        lines.append("깨짐 있음")
+    elif o.damage == "none" and not _is_paper(o) and o.item_type != "vinyl":
         lines.append("파손 없음")
 
     return [line for line in lines if line][:MAX_BULLETS]

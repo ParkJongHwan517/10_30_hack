@@ -129,12 +129,30 @@ def decide(
                 return ctx.final("GENERAL", build_bullets(o))
             return _washable(ctx, o, answer, attempt, "PLASTIC")
         case "cardboard_box":
-            food_soiled = o.contamination.level != "none" and o.contamination.type in FOOD_TYPES
-            if food_soiled or o.coating_or_mixed_material == "yes":
-                return ctx.final("GENERAL", build_bullets(o))
-            return ctx.final("PAPER", build_bullets(o))
+            return _paper(ctx, o)
         case "can":
             # 부산시 안내: 이물질 제거 후 캔류로 배출. 내용물·오염은 헹구면 되므로 질문 없이 배출 방법으로 안내한다
             return ctx.final("CAN", build_bullets(o))
+        case "vinyl":
+            # 부산시 안내: 이물질 묻은 비닐은 종량제. 비닐은 세척·재촬영 대신 바로 안내한다
+            if o.contamination.level != "none":
+                return ctx.final("GENERAL", build_bullets(o))
+            return ctx.final("VINYL", build_bullets(o))
+        case "glass_bottle":
+            # 부산시 안내: 깨진 유리병은 불연성 쓰레기
+            if o.damage == "broken":
+                return ctx.final("NONCOMBUSTIBLE", build_bullets(o))
+            return ctx.final("GLASS", build_bullets(o))
+        case "other" if o.material_guess == "paper":
+            # AI가 과자 상자·종이 용기를 상자로 못 보고 other로 내도 재질이 종이면 종이 규칙을 적용한다
+            return _paper(ctx, o)
 
     return ctx.non_final("UNKNOWN", UNKNOWN_HEADLINE, True)
+
+
+def _paper(ctx: _Ctx, o: Observation) -> Decision:
+    """음식물·기름 오염 또는 코팅이면 종량제, 아니면 종이류 (부산시 종이류 안내)."""
+    food_soiled = o.contamination.level != "none" and o.contamination.type in FOOD_TYPES
+    if food_soiled or o.coating_or_mixed_material == "yes":
+        return ctx.final("GENERAL", build_bullets(o))
+    return ctx.final("PAPER", build_bullets(o))
