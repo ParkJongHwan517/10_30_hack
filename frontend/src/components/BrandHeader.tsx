@@ -1,9 +1,10 @@
 interface BrandHeaderProps {
-  demoMode?: boolean
-  onHome?: () => void
-}
+   demoMode?: boolean
+   onHome?: () => void
+  gu?: string
+ }
 
-export function BrandHeader({ demoMode = false, onHome }: BrandHeaderProps) {
+export function BrandHeader({ demoMode = false, onHome, gu }: BrandHeaderProps) {
   return (
     <header className="topbar">
       <button
@@ -28,7 +29,7 @@ export function BrandHeader({ demoMode = false, onHome }: BrandHeaderProps) {
         {demoMode && <span className="badge badge-demo">데모 모드</span>}
         <span className="region-badge">
           <span className="pin-dot" aria-hidden="true" />
-          <span><b>부산광역시 기준</b><small>부산시·구·군 공식 안내 기반</small></span>
+          <span><b>{gu ? `부산광역시 ${gu} 기준` : '부산광역시 기준'}</b><small>부산시·구·군 공식 안내 기반</small></span>
         </span>
       </div>
     </header>

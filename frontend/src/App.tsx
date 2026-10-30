@@ -227,7 +227,7 @@ export default function App() {
 
   return (
     <div className="app-shell" id="top">
-      <BrandHeader demoMode={state.demoMode} onHome={goHome} />
+      <BrandHeader demoMode={state.demoMode} onHome={goHome} gu={state.screen === 'REGION' ? undefined : state.gu} />
       <main className="page-main">
         <div className="page-intro">
           <div><span className="intro-kicker">SMART RECYCLING GUIDE</span><h2>지금 이 상태, 어떻게 버려야 할까요?</h2><p>사진 한 장으로 쓰레기의 상태를 분석하고 부산광역시 기준 배출 방법을 안내합니다.</p></div>

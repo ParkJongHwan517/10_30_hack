@@ -249,3 +249,8 @@ img, svg, video { max-width: 100%; }
 
 .scan-visual { width: fit-content; max-width: min(300px, 86%); height: auto; min-width: 160px; min-height: 160px; }
 .scan-visual img { display: block; width: auto; height: auto; max-width: 100%; max-height: min(42dvh, 340px); object-fit: contain; }
+
+@media (max-width: 380px) {
+  .header-badges { flex: 0 1 auto; min-width: 0; }
+  .region-badge { white-space: normal; }
+}
