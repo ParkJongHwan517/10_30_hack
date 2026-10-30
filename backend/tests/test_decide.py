@@ -139,3 +139,10 @@ def test_unverified_rules_hide_url(monkeypatch):
     assert d.rules_verified is False
     assert d.basis_label == "시연용 규칙 기준"
     assert d.source.url is None
+
+
+def test_gate_reason_shared_with_observe():
+    # /api/observe가 같은 함수로 ok/reason을 판정하므로 decide 결과와 어긋나지 않아야 한다
+    assert decide_module.gate_reason(obs("pet_clear_label")) is None
+    assert decide_module.gate_reason(obs("pet_clear_label", confidence=0.59)) == "quality"
+    assert decide_module.gate_reason(obs("pet_clear_label", privacy_flag=True, photo_quality="dark")) == "privacy"

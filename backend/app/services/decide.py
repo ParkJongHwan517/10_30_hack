@@ -6,7 +6,7 @@
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from ..models import Answers, Decision, Observation, Question, Region, ResultCode, Source
 from .bullets import build_bullets
@@ -27,6 +27,18 @@ def load_rules() -> dict[str, Any]:
 
 def lookup_rule(code: ResultCode) -> dict[str, Any]:
     return load_rules()["results"][code]
+
+
+def gate_reason(o: Observation) -> Literal["privacy", "quality"] | None:
+    """§9.1 공통 게이트 1·2. /api/observe의 ok/reason 판정도 이 함수를 쓴다(기준을 한 곳에 둔다).
+
+    개인정보가 사진 품질보다 먼저다. 통과하면 None.
+    """
+    if o.privacy_flag:
+        return "privacy"
+    if o.photo_quality != "good" or o.confidence < CONFIDENCE_THRESHOLD:
+        return "quality"
+    return None
 
 
 def needs_question(o: Observation, answer: str | None, attempt: int) -> bool:
@@ -101,11 +113,8 @@ def decide(
     answer = Answers.model_validate(answers).contamination_removable if answers else None
     ctx = _Ctx()
 
-    # 공통 게이트
-    if o.privacy_flag:
-        return ctx.non_final("RESHOOT_QUALITY", RESHOOT_HEADLINE, False, reshoot_reason="privacy")
-    if o.photo_quality != "good" or o.confidence < CONFIDENCE_THRESHOLD:
-        return ctx.non_final("RESHOOT_QUALITY", RESHOOT_HEADLINE, False, reshoot_reason="quality")
+    if reason := gate_reason(o):
+        return ctx.non_final("RESHOOT_QUALITY", RESHOOT_HEADLINE, False, reshoot_reason=reason)
 
     match o.item_type:
         case "pet_bottle":
