@@ -1,0 +1,24 @@
+{
+  "item_type": "pet_bottle",
+  "material_guess": "PET",
+  "is_transparent_colorless": "yes",
+  "is_white": "unknown",
+  "contents_present": "no",
+  "contamination": {
+    "level": "none",
+    "type": "none",
+    "likely_removable_by_rinsing": "unknown"
+  },
+  "attachments": {
+    "label_present": "yes",
+    "tape_present": "no",
+    "waybill_present": "no",
+    "lid_present": "yes"
+  },
+  "damage": "none",
+  "coating_or_mixed_material": "no",
+  "privacy_flag": false,
+  "photo_quality": "good",
+  "confidence": 0.9,
+  "notes_ko": "라벨이 붙은 무색 투명 페트병이며 내용물은 비어 있다."
+}

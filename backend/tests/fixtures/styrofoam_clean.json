@@ -1,0 +1,24 @@
+{
+  "item_type": "styrofoam_container",
+  "material_guess": "EPS",
+  "is_transparent_colorless": "no",
+  "is_white": "yes",
+  "contents_present": "no",
+  "contamination": {
+    "level": "none",
+    "type": "none",
+    "likely_removable_by_rinsing": "unknown"
+  },
+  "attachments": {
+    "label_present": "no",
+    "tape_present": "no",
+    "waybill_present": "no",
+    "lid_present": "no"
+  },
+  "damage": "none",
+  "coating_or_mixed_material": "no",
+  "privacy_flag": false,
+  "photo_quality": "good",
+  "confidence": 0.9,
+  "notes_ko": "흰색 스티로폼 용기이며 눈에 띄는 오염이 없다."
+}
