@@ -6,6 +6,9 @@ import { getFixtureObserveResponse } from './lib/fixture-observations'
 import { resizeImage } from './lib/image'
 import { BrandHeader } from './components/BrandHeader'
 import { ProgressSteps } from './components/ProgressSteps'
+import { Disclaimer } from './components/Disclaimer'
+import { MultiResultScreen } from './screens/MultiResultScreen'
+import type { ItemResult } from './screens/MultiResultScreen'
 import {
   CameraScreen,
   ErrorScreen,
@@ -20,7 +23,7 @@ import {
 } from './screens/FlowScreens'
 
  type Gu = components['schemas']['Region']['gu']
- type Screen = 'REGION' | 'CAMERA' | 'OBSERVING' | 'NOTICE_RESHOOT' | 'QUESTION' | 'RULE_LOOKUP' | 'WASH_GUIDE' | 'RESULT' | 'NOTICE_UNKNOWN' | 'ERROR'
+ type Screen = 'REGION' | 'CAMERA' | 'OBSERVING' | 'NOTICE_RESHOOT' | 'QUESTION' | 'RULE_LOOKUP' | 'WASH_GUIDE' | 'RESULT' | 'MULTI_RESULT' | 'NOTICE_UNKNOWN' | 'ERROR'
  type Answer = 'yes' | 'no' | 'unknown'
 
 interface AppState {
@@ -35,6 +38,8 @@ interface AppState {
   demoMode: boolean
   reshootReason: 'quality' | 'privacy' | null
   errorMessage: string
+  // 사진 1장에서 항목이 여러 개일 때 항목별 결과 (1개면 비어 있고 기존 단일 흐름을 쓴다)
+  multiItems: ItemResult[]
 }
 
 type Action =
@@ -48,11 +53,14 @@ type Action =
   | { type: 'SET_ATTEMPT'; attempt: 1 | 2 }
   | { type: 'RESHOOT_REASON'; reason: 'quality' | 'privacy' | null }
   | { type: 'ERROR'; message: string }
+  | { type: 'MULTI_SET'; items: ItemResult[] }
+  | { type: 'MULTI_UPDATE'; index: number; item: ItemResult }
   | { type: 'RESET' }
 
 const initialState: AppState = {
   screen: 'REGION', gu: '해운대구', image: null, previewUrl: null, observation: null,
   decision: null, answer: null, attempt: 1, demoMode: false, reshootReason: null, errorMessage: '',
+  multiItems: [],
 }
 
 function reducer(state: AppState, action: Action): AppState {
@@ -67,6 +75,8 @@ function reducer(state: AppState, action: Action): AppState {
     case 'SET_ATTEMPT': return { ...state, attempt: action.attempt, answer: null, decision: null }
     case 'RESHOOT_REASON': return { ...state, reshootReason: action.reason }
     case 'ERROR': return { ...state, screen: 'ERROR', errorMessage: action.message }
+    case 'MULTI_SET': return { ...state, multiItems: action.items }
+    case 'MULTI_UPDATE': return { ...state, multiItems: state.multiItems.map((item, i) => (i === action.index ? action.item : item)) }
     case 'RESET': return { ...initialState, gu: state.gu }
     default: return state
   }
@@ -148,6 +158,33 @@ export default function App() {
     }
   }, [region, state.attempt, state.demoMode, state.observation])
 
+  // 여러 항목: 항목마다 /api/decide를 동시에 호출해 카드로 모은다. 규칙 판단 연출(최소 1.2초)은 단일 흐름과 같게
+  const decideItems = useCallback(async (items: components['schemas']['Observation'][], demoMode: boolean) => {
+    const startedAt = Date.now()
+    dispatch({ type: 'SCREEN', screen: 'RULE_LOOKUP' })
+    const decisions = await Promise.all(items.map((observation) => decideWaste({
+      region, observation, answers: null, attempt: state.attempt, demo_mode: demoMode,
+    })))
+    await delay(Math.max(0, 1200 - (Date.now() - startedAt)))
+    dispatch({ type: 'MULTI_SET', items: items.map((observation, i) => ({ observation, decision: decisions[i] })) })
+    dispatch({ type: 'SCREEN', screen: 'MULTI_RESULT' })
+  }, [region, state.attempt])
+
+  // 카드 안에서 질문에 답하면 그 항목만 다시 판단한다
+  const answerItem = useCallback(async (index: number, answer: Answer) => {
+    const item = state.multiItems[index]
+    if (!item) return
+    dispatch({ type: 'MULTI_UPDATE', index, item: { ...item, loading: true } })
+    try {
+      const decision = await decideWaste({
+        region, observation: item.observation, answers: { contamination_removable: answer }, attempt: state.attempt, demo_mode: state.demoMode,
+      })
+      dispatch({ type: 'MULTI_UPDATE', index, item: { ...item, decision, loading: false } })
+    } catch (error) {
+      dispatch({ type: 'ERROR', message: errorMessage(error) })
+    }
+  }, [region, state.attempt, state.demoMode, state.multiItems])
+
   const runObserve = useCallback(async () => {
     if (!state.image) return
     dispatch({ type: 'SCREEN', screen: 'OBSERVING' })
@@ -158,8 +195,13 @@ export default function App() {
       return
     }
     dispatch({ type: 'OBSERVED', observation: response.observation, demoMode: response.demo_mode })
+    const items = response.items ?? []
+    if (items.length > 1) {
+      await decideItems(items, response.demo_mode)
+      return
+    }
     await submitDecision(null, response.observation, response.demo_mode)
-  }, [state.image, state.attempt, submitDecision])
+  }, [state.image, state.attempt, submitDecision, decideItems])
 
   const handleAnalyze = useCallback(async () => {
     if (busy || !state.image) return
@@ -243,6 +285,7 @@ export default function App() {
             {state.screen === 'RULE_LOOKUP' && <RuleLookupScreen gu={state.gu} />}
             {state.screen === 'WASH_GUIDE' && state.decision && <WashGuideScreen decision={state.decision} onRetake={handleRetake} />}
             {state.screen === 'RESULT' && state.decision && <ResultScreen decision={state.decision} demoMode={state.demoMode} onRestart={restart} />}
+            {state.screen === 'MULTI_RESULT' && <MultiResultScreen items={state.multiItems} previewUrl={state.previewUrl} demoMode={state.demoMode} onAnswer={(index, answer) => void answerItem(index, answer)} onRetakeItem={handleRetake} onRestart={restart} />}
             {state.screen === 'NOTICE_RESHOOT' && <ReshootNoticeScreen reason={state.reshootReason} canRetake={state.attempt === 1} onRetake={handleNoticeRetake} onRestart={restart} />}
             {state.screen === 'NOTICE_UNKNOWN' && <UnknownNoticeScreen onRestart={restart} />}
             {state.screen === 'ERROR' && <ErrorScreen message={state.errorMessage} onRetry={() => void retry()} onRestart={restart} />}
@@ -250,6 +293,7 @@ export default function App() {
         </div>
         <div className="below-note"><span className="info-circle">i</span><p>AI는 사진에서 보이는 상태를 관찰하고, 최종 배출 판단은 부산 기준 규칙 엔진이 수행합니다.</p></div>
       </main>
+      <Disclaimer />
     </div>
   )
 }
