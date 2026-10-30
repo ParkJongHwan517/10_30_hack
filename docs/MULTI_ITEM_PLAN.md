@@ -6,7 +6,7 @@
 ## 흐름
 
 ```
-사진 1장 → /api/observe : AI가 항목(따로 버리는 물건·구성품)별로 관찰, 큰 것부터 최대 4개
+사진 1장 → /api/observe : AI가 항목(따로 버리는 물건·구성품)별로 관찰, 큰 것부터 최대 6개
          → 프론트가 항목마다 /api/decide 호출 → 항목별 결과 카드
 ```
 
@@ -20,7 +20,7 @@
 |---|---|
 | `ObserveResponse.items?: Observation[]` | 항목 목록. `observation`은 `items[0]`(하위 호환). api-types에서 선택 필드라 기존 프론트 코드 안 깨짐 |
 | `Observation.label_ko: str` (기본 `""`) | 카드 제목용 짧은 이름 ("컵 뚜껑"). 브랜드 금지 |
-| `item_type: "small_plastic"` | 빨대·일회용 수저·포크 → 일반폐기물. 근거: 환경부 공통 가이드라인(부산시 안내엔 없음), 결과의 `source`도 환경부로 표시 |
+| `item_type: "small_plastic"` | 빨대·일회용 숟가락·포크 → 일반폐기물. 근거: 서울시 안내(2021.12.10, 부산시 안내엔 없음), 결과의 `source`도 서울시 글로 표시 |
 | `services.decide.photo_gate_reason(items)` | 사진 단위 게이트. Q는 `observe.py`에서 이걸 호출 |
 | 종이 보완 (PR #17) | `item_type=other` + `material_guess=paper` → 종이 규칙 (컵홀더 → 종이류) |
 

@@ -229,7 +229,7 @@ def test_straw_is_general_with_moe_source():
     assert (d.kind, d.result_code) == ("FINAL", "GENERAL")
     assert d.steps == ["크기가 작아 재활용 선별이 되지 않아요", "종량제 봉투에 넣어 배출하기"]
     assert d.source.label.startswith("서울시 ")
-    assert d.analysis_bullets[0] == "작은 플라스틱 (빨대·일회용 수저 등)"
+    assert d.analysis_bullets[0] == "작은 플라스틱 (빨대·일회용 숟가락·포크 등)"
 
 
 def test_coffee_cup_each_item():

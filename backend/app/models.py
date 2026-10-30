@@ -41,7 +41,7 @@ class Observation(BaseModel):
         "can=알루미늄·철로 된 음료·식품 캔. "
         "vinyl=비닐류: 과자·라면 봉지, 비닐봉지, 뽁뽁이(에어캡), 랩. "
         "glass_bottle=유리병. "
-        "small_plastic=빨대, 일회용 숟가락·포크·젓는 막대처럼 작은 플라스틱. "
+        "small_plastic=빨대, 일회용 숟가락·포크처럼 작은 플라스틱. "
         "paper_pack=우유팩·주스팩·두유 멸균팩처럼 안쪽이 코팅된 음료용 종이팩(종이 상자와 구분). "
         "receipt_coated_paper=영수증, 택배 전표, 라벨 스티커, 명함·사진, 금은박·비닐 코팅된 종이. "
         "other=위에 해당하지 않는 물체. unknown=무엇인지 판별할 수 없음."
@@ -120,7 +120,7 @@ class ObserveResponse(BaseModel):
     observation: Observation  # 하위 호환: items[0]과 같은 값
     # default_factory: 스키마에 default가 안 실려서 api-types에서 선택 필드(items?)가 된다 → 기존 프론트 코드가 안 깨진다
     items: list[Observation] = Field(
-        default_factory=list, description="사진 속 항목(따로 버리는 물건·구성품)들, 큰 것부터 최대 4개. 프론트는 항목마다 /api/decide를 호출한다."
+        default_factory=list, description="사진 속 항목(따로 버리는 물건·구성품)들, 큰 것부터 최대 6개. 프론트는 항목마다 /api/decide를 호출한다."
     )
     ok: bool  # false = 사진 단위 게이트(개인정보·대표 항목 품질)에 걸림 — services.decide.photo_gate_reason
     reason: Literal["quality", "privacy"] | None = None

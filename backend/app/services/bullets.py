@@ -39,7 +39,7 @@ def _item_line(o: Observation) -> str | None:
         case "glass_bottle":
             return "유리병"
         case "small_plastic":
-            return "작은 플라스틱 (빨대·일회용 수저 등)"
+            return "작은 플라스틱 (빨대·일회용 숟가락·포크 등)"
         case "paper_pack":
             return "종이팩 (우유·주스팩)"
         case "receipt_coated_paper":
