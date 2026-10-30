@@ -1,13 +1,15 @@
-"""POST /api/decide — 담당: 백엔드 2 (규칙·데이터). PROJECT_SPEC §10."""
+"""POST /api/decide — 담당: P. PROJECT_SPEC §10. AI를 호출하지 않는다(규칙만)."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from ..models import Decision, DecideRequest
+from ..services.decide import decide as run_rules
 
 router = APIRouter()
 
 
 @router.post("/decide", response_model=Decision)
 def decide(req: DecideRequest) -> Decision:
-    # TODO(백엔드2): services/decide.py decide() 호출 → (선택) services/log.py 익명 로그
-    raise HTTPException(status_code=501, detail="not implemented")
+    decision = run_rules(req.observation, req.region, req.answers, req.attempt)
+    # TODO(P): Q의 services/log.py log_decision()이 들어오면 terminal 결과일 때 익명 로그 호출 (실패해도 무시)
+    return decision
