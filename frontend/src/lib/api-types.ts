@@ -140,7 +140,7 @@ export interface components {
              */
             kind: "ASK_QUESTION" | "WASH_AND_RESHOOT" | "FINAL" | "RESHOOT_QUALITY" | "UNKNOWN";
             /** Result Code */
-            result_code?: ("PET_CLEAR" | "PLASTIC" | "STYROFOAM" | "PAPER" | "CAN" | "GENERAL") | null;
+            result_code?: ("PET_CLEAR" | "PLASTIC" | "STYROFOAM" | "PAPER" | "CAN" | "VINYL" | "GLASS" | "NONCOMBUSTIBLE" | "GENERAL") | null;
             /** Basis Label */
             basis_label: string;
             /** Headline */
@@ -180,14 +180,16 @@ export interface components {
         Observation: {
             /**
              * Item Type
+             * @description 가장 크게 보이는 쓰레기 하나의 종류. pet_bottle=음료·생수 페트병. styrofoam_container=발포 스티로폼(EPS)만: 표면에 작은 알갱이 무늬가 보이고 두껍고 가볍고 불투명하다. plastic_container=플라스틱 용기·트레이·컵·뚜껑: 얇고 매끈하거나 광택 있는 흰색 트레이도 여기에 넣는다. cardboard_box=종이로 된 상자 전체: 택배 골판지 상자와 과자·제품 상자(얇은 판지)를 모두 포함한다. can=알루미늄·철로 된 음료·식품 캔. vinyl=비닐류: 과자·라면 봉지, 비닐봉지, 뽁뽁이(에어캡), 랩. glass_bottle=유리병. other=위에 해당하지 않는 물체. unknown=무엇인지 판별할 수 없음.
              * @enum {string}
              */
-            item_type: "pet_bottle" | "styrofoam_container" | "plastic_container" | "cardboard_box" | "can" | "other" | "unknown";
+            item_type: "pet_bottle" | "styrofoam_container" | "plastic_container" | "cardboard_box" | "can" | "vinyl" | "glass_bottle" | "other" | "unknown";
             /**
              * Material Guess
+             * @description 재질 추정. PET=투명 페트, EPS=발포 스티로폼(알갱이 무늬), PP·PS=일반 플라스틱, paper=종이·판지, metal=금속, vinyl=비닐·필름, glass=유리, mixed=여러 재질이 붙어 있음. item_type과 같은 판단이어야 한다(예: 종이 상자를 EPS로 쓰지 않는다).
              * @enum {string}
              */
-            material_guess: "PET" | "EPS" | "PP" | "PS" | "paper" | "metal" | "mixed" | "unknown";
+            material_guess: "PET" | "EPS" | "PP" | "PS" | "paper" | "metal" | "vinyl" | "glass" | "mixed" | "unknown";
             /**
              * Is Transparent Colorless
              * @enum {string}
