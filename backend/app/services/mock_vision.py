@@ -1,11 +1,13 @@
 """MOCK_VISION=true 일 때 Gemini 대신 돌려주는 고정 관찰값. PROJECT_SPEC §11 골든 아웃풋 기준.
 
-골든(G1·G2·G5·G6·G7)은 D의 backend/tests/fixtures/*.json을 그대로 재사용한다(§11). 값은 여기서 복제하지 않는다.
+골든(G1·G2·G5·G6·G7)과 복합 쓰레기(COFFEE)는 D의 backend/tests/fixtures/*.json을 그대로 재사용한다(§11). 값은 여기서 복제하지 않는다.
 Vercel 번들에 포함되도록 vercel.json의 includeFiles에 해당 경로를 넣어 두었다.
 """
 
 import os
 from pathlib import Path
+
+from pydantic import TypeAdapter
 
 from ..models import Attachments, Contamination, Observation
 
@@ -17,6 +19,8 @@ _GOLDEN_FILES = {
     "G6": "plastic_pp_clean",
     "G7": "cardboard_tape",
 }
+_MULTI_FILES = {"COFFEE": "multi_coffee_cup"}  # 목록 픽스처: 컵 본체·뚜껑·컵홀더·빨대
+_ITEMS = TypeAdapter(list[Observation])
 
 
 def _load(name: str) -> Observation:
@@ -55,11 +59,16 @@ _GATE_FIXTURES: dict[str, Observation] = {
 }
 
 
-def mock_observation(is_reshoot: bool = False) -> Observation:
-    """MOCK_FIXTURE(기본 G1)에 해당하는 관찰값. G2 재촬영(is_reshoot)이면 세척 후인 G5를 돌려준다(경로 A 시연용)."""
+def mock_items(is_reshoot: bool = False) -> list[Observation]:
+    """MOCK_FIXTURE(기본 G1)에 해당하는 항목 목록. 단일 품목은 길이 1짜리 목록으로 돌려준다.
+
+    COFFEE면 복합 쓰레기(4개 항목). G2 재촬영(is_reshoot)이면 세척 후인 G5를 돌려준다(경로 A 시연용).
+    """
     name = os.getenv("MOCK_FIXTURE", "G1").upper()
+    if name in _MULTI_FILES:
+        return _ITEMS.validate_json((_FIXTURE_DIR / f"{_MULTI_FILES[name]}.json").read_text(encoding="utf-8"))
     if name == "G2" and is_reshoot:
         name = "G5"
     if name in _GATE_FIXTURES:
-        return _GATE_FIXTURES[name].model_copy(deep=True)
-    return _load(_GOLDEN_FILES.get(name, _GOLDEN_FILES["G1"]))
+        return [_GATE_FIXTURES[name].model_copy(deep=True)]
+    return [_load(_GOLDEN_FILES.get(name, _GOLDEN_FILES["G1"]))]
