@@ -1,0 +1,15 @@
+{
+  "_설명": "시연 사진 정답표. file은 samples/ 기준 경로. expect는 사진 속 항목별 기대 결과를 큰 것부터 적는다(결과 코드 또는 ASK_QUESTION·UNKNOWN·RESHOOT_QUALITY). 사진은 팀이 직접 찍고 얼굴·송장·브랜드 로고가 안 보이게(§13). 비교: python backend/tests/eval_samples.py --help",
+  "samples": [
+    {"file": "pet_bottle.jpg", "expect": ["PET_CLEAR", "PLASTIC"], "note": "투명 생수병, 라벨 제거 전. 뚜껑이 별도 항목으로 나올 수 있음"},
+    {"file": "styrofoam_sauce.jpg", "expect": ["ASK_QUESTION"], "note": "소스 묻은 흰 스티로폼 배달 용기 (G2, 시연 핵심)"},
+    {"file": "styrofoam_clean.jpg", "expect": ["STYROFOAM"], "note": "세척 후 같은 용기 (G5, attempt=2로도 확인)"},
+    {"file": "plastic_container.jpg", "expect": ["PLASTIC"], "note": "깨끗한 PP 배달 용기 (G6)"},
+    {"file": "delivery_box.jpg", "expect": ["PAPER"], "note": "택배 상자, 송장은 떼거나 가리고 촬영 (G7)"},
+    {"file": "can.jpg", "expect": ["CAN"], "note": "빈 음료 캔 (G8)"},
+    {"file": "coffee_cup.jpg", "expect": ["PLASTIC", "PLASTIC", "PAPER", "GENERAL"], "note": "테이크아웃 컵: 본체·뚜껑·종이 홀더·빨대"},
+    {"file": "milk_pack.jpg", "expect": ["PAPER_PACK"], "note": "빈 우유팩 (G11)"},
+    {"file": "snack_box.jpg", "expect": ["PAPER"], "note": "과자 종이 박스 — 지금 오답이 나는 사진, 시연 제외 후보"},
+    {"file": "homerun_tray.jpg", "expect": ["PLASTIC"], "note": "과자 속 흰 플라스틱 트레이 — 스티로폼으로 오인식되는지 확인"}
+  ]
+}

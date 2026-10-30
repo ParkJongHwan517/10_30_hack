@@ -86,7 +86,7 @@ def test_g6_plastic_pp_clean():
     d = decide(obs("plastic_pp_clean"), REGION, None, 1)
     assert (d.kind, d.result_code) == ("FINAL", "PLASTIC")
     assert d.headline == "플라스틱류 분리배출 대상입니다."
-    assert_bullets(d, ["플라스틱 배달 용기(PP 추정)", "오염 없음 (깨끗함)", "라벨·부착물 없음", "파손 없음"])
+    assert_bullets(d, ["플라스틱 용기 (PP 추정)", "오염 없음 (깨끗함)", "라벨·부착물 없음", "파손 없음"])
     assert d.steps == ["내용물 비우기", "라벨·스티커 제거하기", "플라스틱류로 분리배출하기"]
 
 
@@ -277,3 +277,12 @@ def test_receipt_is_general_not_paper():
     assert d.steps == ["영수증·전표·코팅된 종이는 종이류로 재활용되지 않아요", "종량제 봉투에 넣어 배출하기"]
     assert d.source.label == "부산광역시 종이류 재활용품 분리배출 안내"
     assert d.analysis_bullets[0] == "영수증·코팅된 종이"
+
+
+def test_non_box_paper_uses_general_paper_steps():
+    # 컵홀더(other/paper)에 "상자를 펼쳐" 같은 상자 전용 문구가 나오지 않게
+    d = decide(obs("cardboard_tape", item_type="other"), REGION, None, 1)
+    assert d.result_code == "PAPER"
+    assert d.steps == ["테이프·스프링 등 종이가 아닌 재질 제거하기", "이물질이 섞이지 않게 모으기", "종이류로 분리배출하기"]
+    # 상자는 기존 문구 유지
+    assert "상자를 펼쳐 납작하게 하기" in decide(obs("cardboard_tape"), REGION, None, 1).steps

@@ -22,7 +22,7 @@ def _item_line(o: Observation) -> str | None:
         case "styrofoam_container":
             return "스티로폼 용기"
         case "plastic_container":
-            return "플라스틱 배달 용기(PP 추정)" if o.material_guess == "PP" else "플라스틱 배달 용기"
+            return "플라스틱 용기 (PP 추정)" if o.material_guess == "PP" else "플라스틱 용기"
         case "cardboard_box":
             return "종이상자"
         case "can":
