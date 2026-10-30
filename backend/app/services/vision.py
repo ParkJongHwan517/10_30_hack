@@ -16,7 +16,11 @@ from pydantic import TypeAdapter, ValidationError
 from ..models import Attachments, Contamination, Observation
 
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
-TIMEOUT_MS = 20_000  # §8.2 타임아웃 20초
+TIMEOUT_MS = 20_000  # §8.2 타임아웃 20초 (클라이언트 기본값, 시도별 타임아웃이 우선한다)
+# 시도별 타임아웃: 정상 응답은 대부분 3~7초(최대 약 11초)인데 가끔 응답이 멈춰서 20초를 다 쓰는 일이 있다.
+# 첫 시도를 일찍 끊고 재시도하면 최악의 대기가 41초 → 29초로 줄고, 멈춘 경우는 보통 20초 안에 끝난다.
+# (Gemini API는 10초 미만 데드라인을 400으로 거부한다 — 확인함)
+ATTEMPT_TIMEOUTS_MS = (13_000, 15_000)
 RETRY_DELAY_S = 1.0
 
 # docs/PROJECT_SPEC.md §8.1 그대로 사용 (수정은 P 승인, 문서와 같은 문구로 맞춘다)
@@ -68,9 +72,10 @@ def _thinking(model: str) -> types.ThinkingConfig | None:
     return None
 
 
-def _config(model: str) -> types.GenerateContentConfig:
+def _config(model: str, timeout_ms: int | None = None) -> types.GenerateContentConfig:
     thinking = _thinking(model)
     return types.GenerateContentConfig(
+        http_options=types.HttpOptions(timeout=timeout_ms) if timeout_ms else None,
         system_instruction=SYSTEM_PROMPT,
         response_mime_type="application/json",
         response_schema=list[Observation],
@@ -100,13 +105,13 @@ def _fallback() -> Observation:
 _ITEMS = TypeAdapter(list[Observation])
 
 
-def _call(image_bytes: bytes, mime_type: str) -> list[Observation] | None:
+def _call(image_bytes: bytes, mime_type: str, timeout_ms: int) -> list[Observation] | None:
     """Gemini 1회 호출. 응답이 스키마에 맞지 않거나 항목이 하나도 없으면 None."""
     model = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
     resp = _get_client().models.generate_content(
         model=model,
         contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime_type), USER_PROMPT],
-        config=_config(model),
+        config=_config(model, timeout_ms),
     )
     items = resp.parsed
     if not (isinstance(items, list) and all(isinstance(o, Observation) for o in items)):
@@ -124,7 +129,7 @@ def observe(image_bytes: bytes, mime_type: str = "image/jpeg") -> list[Observati
     """
     for attempt in (1, 2):
         try:
-            items = _call(image_bytes, mime_type)
+            items = _call(image_bytes, mime_type, ATTEMPT_TIMEOUTS_MS[attempt - 1])
         except VisionFailed:
             raise
         except Exception as exc:  # noqa: BLE001 — SDK/네트워크 예외를 분류해 처리
