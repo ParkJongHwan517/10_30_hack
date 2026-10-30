@@ -97,6 +97,17 @@ class Source(BaseModel):
     url: str | None = None
 
 
+class DistrictInfo(BaseModel):
+    """구·군별 참고 안내(팀 조사 기준). 부산시 공식 기준을 대체하지 않고 따로 보여준다."""
+
+    gu: str
+    prohibited_items: str = ""
+    special_notes: str = ""
+    verified: bool = False  # 공식 링크로 확인된 구만 true
+    source_label: str
+    source_url: str | None = None
+
+
 class Decision(BaseModel):
     kind: DecisionKind
     result_code: ResultCode | None = None
@@ -110,7 +121,7 @@ class Decision(BaseModel):
     source: Source
     rules_verified: bool
     terminal: bool
-
+    district_info: DistrictInfo | None = None  # 선택: 구 안내가 있는 결과(FINAL)에만
 
 # ---------- 요청·응답 (§10) ----------
 

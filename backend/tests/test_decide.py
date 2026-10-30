@@ -336,3 +336,55 @@ def test_unlisted_general_waste_stays_unknown():
     # 근거를 확인하지 못한 품목(마스크·칫솔 등)은 지어내지 않고 판단 불가
     d = decide(obs("wet_tissue", item_type="other", material_guess="PP"), REGION, None, 1)
     assert d.kind == "UNKNOWN"
+
+
+# ---------- 구·군별 안내 (팀 조사 기준, 부산시 공식 판단과 분리) ----------
+
+
+def test_district_info_attached_for_final_with_category():
+    d = decide(obs("pet_clear_label"), REGION, None, 1)
+    info = d.district_info
+    assert info is not None and info.gu == "해운대구"
+    assert info.verified is False and info.source_url is None
+    assert info.source_label == "해운대구 안내 (팀 조사 기준, 공식 링크 없음 — 구청 안내를 확인하세요)"
+    assert d.result_code == "PET_CLEAR" and d.headline == "투명 페트병 별도배출 대상입니다."  # 공식 판단은 그대로
+
+
+def test_district_info_paper_pack_and_noncombustible_mapped():
+    assert decide(obs("paper_pack_milk"), REGION, None, 1).district_info is not None
+    assert decide(obs("glass_bottle_empty", damage="broken"), REGION, None, 1).district_info is not None
+
+
+def test_district_info_none_for_general_and_non_final():
+    assert decide(obs("styrofoam_sauce"), REGION, {"contamination_removable": "no"}, 1).district_info is None  # GENERAL
+    assert decide(obs("styrofoam_sauce"), REGION, None, 1).district_info is None  # ASK_QUESTION
+    assert decide(obs("wet_tissue"), REGION, None, 1).district_info is None
+
+
+def test_district_info_never_exposes_disposal_method():
+    info = decide(obs("pet_clear_label"), REGION, None, 1).district_info
+    assert set(info.model_dump()) == {"gu", "prohibited_items", "special_notes", "verified", "source_label", "source_url"}
+
+
+def test_strip_schedule_removes_weekday_sentences_only():
+    assert decide_module.strip_schedule("수요일 문전 배출") == ""
+    assert decide_module.strip_schedule("월/수요일 지정 배출") == ""
+    assert decide_module.strip_schedule("월요일 배출. 헹군 후 펼쳐서 배출") == "헹군 후 펼쳐서 배출"
+    assert decide_module.strip_schedule("라벨 제거 필수") == "라벨 제거 필수"
+
+
+def test_district_info_never_contains_weekday_for_any_gu_and_category():
+    import re
+
+    data = decide_module.load_districts()
+    codes = [c for c, cat in data["result_code_to_category_id"].items() if cat]
+    for gu in data["gu_name_to_district_id"]:
+        for code in codes:
+            info = decide_module.district_info(gu, code)
+            if info:
+                assert not re.search(r"요일|매일|격일", info.prohibited_items + info.special_notes), (gu, code)
+
+
+def test_haeundae_demo_district_has_no_schedule_leak():
+    info = decide(obs("pet_clear_label"), REGION, None, 1).district_info
+    assert info is not None and "요일" not in info.special_notes
