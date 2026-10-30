@@ -1,0 +1,122 @@
+"""API 계약의 원본(SSOT). 프론트 타입(frontend/src/lib/api-types.ts)은 여기서 생성한다.
+
+모델 변경은 A(통합)만 하고, 바꾸기 전에 팀 채팅에 먼저 공지한다. (PROJECT_SPEC §8.2, §9.2, §10)
+"""
+
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+# bool 대신 문자열 3값: Gemini 스키마 호환 + "모름"을 표현하기 위해
+Tri = Literal["yes", "no", "unknown"]
+
+
+# ---------- 관찰 (Gemini가 만든다, §8.2) ----------
+
+
+class Contamination(BaseModel):
+    level: Literal["none", "light", "heavy", "unknown"]
+    type: Literal["food", "sauce", "oil", "dirt", "none", "unknown"]
+    likely_removable_by_rinsing: Tri
+
+
+class Attachments(BaseModel):
+    label_present: Tri  # 라벨·스티커
+    tape_present: Tri  # 테이프
+    waybill_present: Tri  # 택배 송장
+    lid_present: Tri  # 뚜껑
+
+
+class Observation(BaseModel):
+    item_type: Literal[
+        "pet_bottle", "styrofoam_container", "plastic_container", "cardboard_box", "other", "unknown"
+    ]
+    material_guess: Literal["PET", "EPS", "PP", "PS", "paper", "mixed", "unknown"]
+    is_transparent_colorless: Tri  # 페트병: 무색 투명 여부
+    is_white: Tri  # 스티로폼: 흰색(유색 아님) 여부
+    contents_present: Tri  # 병/용기 안에 내용물이 남아 있는지
+    contamination: Contamination
+    attachments: Attachments
+    damage: Literal["none", "broken", "crushed", "unknown"]
+    coating_or_mixed_material: Tri  # 코팅·타 재질 혼합
+    privacy_flag: bool  # 얼굴·송장 개인정보 노출 의심
+    photo_quality: Literal["good", "blurry", "dark", "partial"]
+    confidence: float  # 0.0~1.0, 내부 판단용(화면 표시 금지). 서버에서 0~1로 clamp
+    notes_ko: str  # 관찰 한 문장(판단·배출 방법 언급 금지)
+
+
+# ---------- 판단 (규칙 엔진이 만든다, §9.2) ----------
+
+DecisionKind = Literal["ASK_QUESTION", "WASH_AND_RESHOOT", "FINAL", "RESHOOT_QUALITY", "UNKNOWN"]
+ResultCode = Literal["PET_CLEAR", "PLASTIC", "STYROFOAM", "PAPER", "GENERAL"]
+
+
+class QuestionOption(BaseModel):
+    v: Tri
+    l: str
+
+
+class Question(BaseModel):
+    text: str
+    options: list[QuestionOption]
+
+
+class Source(BaseModel):
+    label: str
+    url: str | None = None
+
+
+class Decision(BaseModel):
+    kind: DecisionKind
+    result_code: ResultCode | None = None
+    basis_label: str
+    headline: str
+    analysis_bullets: list[str] = []
+    steps: list[str] = []
+    question: Question | None = None
+    wash_checklist: list[str] | None = None
+    reshoot_reason: Literal["quality", "privacy"] | None = None
+    source: Source
+    rules_verified: bool
+    terminal: bool
+
+
+# ---------- 요청·응답 (§10) ----------
+
+Gu = Literal[
+    "강서구", "금정구", "기장군", "남구", "동구", "동래구", "부산진구", "북구",
+    "사상구", "사하구", "서구", "수영구", "연제구", "영도구", "중구", "해운대구",
+]
+
+
+class ObserveResponse(BaseModel):
+    observation: Observation
+    ok: bool  # false = 공통 게이트(개인정보·사진 품질)에 걸림
+    reason: Literal["quality", "privacy"] | None = None
+    demo_mode: bool
+
+
+class Region(BaseModel):
+    sido: Literal["부산광역시"] = "부산광역시"
+    gu: Gu
+
+
+class Answers(BaseModel):
+    contamination_removable: Tri | None = None
+
+
+class DecideRequest(BaseModel):
+    region: Region
+    observation: Observation
+    answers: Answers | None = None
+    attempt: Literal[1, 2] = 1
+    demo_mode: bool = False
+
+
+class HealthResponse(BaseModel):
+    ok: bool
+
+
+class ErrorResponse(BaseModel):
+    code: str = Field(examples=["AI_BUSY"])
+    message: str
