@@ -6,7 +6,6 @@ import { getFixtureObserveResponse } from './lib/fixture-observations'
 import { resizeImage } from './lib/image'
 import { BrandHeader } from './components/BrandHeader'
 import { ProgressSteps } from './components/ProgressSteps'
-import { Disclaimer } from './components/Disclaimer'
 import {
   CameraScreen,
   ErrorScreen,
@@ -219,9 +218,16 @@ export default function App() {
     finally { setBusy(false) }
   }, [busy])
 
+  const goHome = useCallback(() => {
+   // 요청 진행 중에 홈으로 가면 늦게 온 응답이 화면을 덮어쓸 수 있어 막는다
+    if (busy) return
+    restart()
+    window.scrollTo({ top: 0 })
+  }, [busy, restart])
+
   return (
     <div className="app-shell" id="top">
-      <BrandHeader demoMode={state.demoMode} />
+      <BrandHeader demoMode={state.demoMode} onHome={goHome} />
       <main className="page-main">
         <div className="page-intro">
           <div><span className="intro-kicker">SMART RECYCLING GUIDE</span><h2>지금 이 상태, 어떻게 버려야 할까요?</h2><p>사진 한 장으로 쓰레기의 상태를 분석하고 부산광역시 기준 배출 방법을 안내합니다.</p></div>
@@ -244,7 +250,6 @@ export default function App() {
         </div>
         <div className="below-note"><span className="info-circle">i</span><p>AI는 사진에서 보이는 상태를 관찰하고, 최종 배출 판단은 부산 기준 규칙 엔진이 수행합니다.</p></div>
       </main>
-      <Disclaimer />
     </div>
   )
 }

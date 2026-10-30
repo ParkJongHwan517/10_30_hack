@@ -1,11 +1,17 @@
 interface BrandHeaderProps {
   demoMode?: boolean
+  onHome?: () => void
 }
 
-export function BrandHeader({ demoMode = false }: BrandHeaderProps) {
+export function BrandHeader({ demoMode = false, onHome }: BrandHeaderProps) {
   return (
     <header className="topbar">
-      <a className="brand" href="#top" aria-label="버려도 돼? 처음으로">
+      <button
+        type="button"
+        className="brand text-left rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2588ee]"
+        onClick={onHome}
+        aria-label="버려도 돼? 처음으로"
+      >
         <span className="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 40 40" fill="none">
             <path d="M12 12h16l-1.4 19H13.4L12 12Z" fill="currentColor" opacity=".16" />
@@ -17,7 +23,7 @@ export function BrandHeader({ demoMode = false }: BrandHeaderProps) {
           <strong>버려도 돼?</strong>
           <small>AI 기반 상태 분석형 분리배출 도우미</small>
         </span>
-      </a>
+      </button>
       <div className="header-badges">
         {demoMode && <span className="badge badge-demo">데모 모드</span>}
         <span className="region-badge">
