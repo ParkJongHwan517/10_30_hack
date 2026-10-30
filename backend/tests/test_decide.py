@@ -388,3 +388,19 @@ def test_district_info_never_contains_weekday_for_any_gu_and_category():
 def test_haeundae_demo_district_has_no_schedule_leak():
     info = decide(obs("pet_clear_label"), REGION, None, 1).district_info
     assert info is not None and "요일" not in info.special_notes
+
+
+COMPOSITE = "뚜껑·포장 비닐·라벨처럼 재질이 다른 부분이 붙어 있으면 떼어서 각각의 재질대로 분리배출하기"
+
+
+def test_composite_note_for_mixed_material_any_product():
+    # 물티슈뿐 아니라 AI가 여러 재질이 붙은 제품으로 본 항목이면 어떤 품목이든 분리 안내
+    for name, extra in (("wet_tissue", {}), ("plastic_pp_clean", {"material_guess": "mixed"}), ("pet_clear_label", {"label_ko": "생수 6입 세트"})):
+        d = decide(obs(name, **extra), REGION, None, 1)
+        assert d.kind == "FINAL" and d.steps[-1] == COMPOSITE, name
+
+
+def test_composite_note_absent_for_plain_and_split_items():
+    assert COMPOSITE not in decide(obs("plastic_pp_clean"), REGION, None, 1).steps
+    # AI가 포장 비닐을 따로 항목으로 쪼갠 경우(이름에 패키지·세트 없음) 중복 안내 없음
+    assert COMPOSITE not in decide(obs("vinyl_clean", label_ko="포장 비닐"), REGION, None, 1).steps

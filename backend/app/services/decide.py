@@ -235,6 +235,20 @@ def district_info(gu: str, code: ResultCode | None) -> DistrictInfo | None:
     )
 
 
+# 뚜껑·포장이 붙을 일이 없는 품목(휴지·기저귀, 도자기, 영수증, 빨대, 비닐 자체)은 분리 안내를 붙이지 않는다
+NO_COMPOSITE_NOTE = {"general_waste", "noncombustible_item", "receipt_coated_paper", "small_plastic", "vinyl"}
+
+
+def is_composite(o: Observation) -> bool:
+    """AI가 여러 재질이 붙은 제품으로 본 항목인지(재질 mixed, 또는 이름에 '패키지'·'세트'). 제품 종류와 무관하게 적용한다.
+
+    AI가 구성품을 쪼개 보고하면(캡·비닐이 각자 항목) 본체는 해당하지 않아 안내가 중복되지 않는다.
+    """
+    if o.item_type in NO_COMPOSITE_NOTE:
+        return False
+    return o.material_guess == "mixed" or any(w in o.label_ko for w in ("패키지", "세트"))
+
+
 def decide(
     observation: Observation,
     region: Region | dict,
@@ -243,6 +257,8 @@ def decide(
 ) -> Decision:
     """규칙 판단(_decide) 결과에 구 안내를 붙인다. 구 안내는 최종 결과(FINAL)에만, 부산시 규칙 판단은 바꾸지 않는다."""
     decision = _decide(observation, region, answers, attempt)
+    if decision.kind == "FINAL" and is_composite(observation):
+        decision.steps = [*decision.steps, load_rules()["composite_step"]]
     if decision.kind == "FINAL":
         gu = region["gu"] if isinstance(region, dict) else region.gu
         decision.district_info = district_info(gu, decision.result_code)
