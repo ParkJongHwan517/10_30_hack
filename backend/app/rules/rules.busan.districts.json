@@ -1,0 +1,1080 @@
+{
+  "_meta": {
+    "source": "busan_disposal_insert.sql (→ busan_disposal_supabase.sql)",
+    "note": "출처·검증 여부 미확인. 화면에 공식 안내로 표시하기 전에 출처를 확인한다.",
+    "rows": 160
+  },
+  "gu_name_to_district_id": {
+    "중구": "JUNG",
+    "서구": "SEO",
+    "동구": "DONG",
+    "영도구": "YEONGDO",
+    "부산진구": "JIN",
+    "동래구": "DONGRAE",
+    "남구": "NAM",
+    "북구": "BUK",
+    "해운대구": "HAEUNDAE",
+    "금정구": "GEUMJEONG",
+    "강서구": "GANGSEO",
+    "연제구": "YEONJE",
+    "수영구": "SUYEONG",
+    "사상구": "SASANG",
+    "사하구": "SAHA",
+    "기장군": "GIJANG"
+  },
+  "result_code_to_category_id": {
+    "PET_CLEAR": "PET_CLEAR",
+    "PLASTIC": "PLASTIC",
+    "STYROFOAM": "STYROFOAM",
+    "PAPER": "PAPER",
+    "CAN": "CAN",
+    "VINYL": "VINYL",
+    "GLASS": "GLASS",
+    "NONCOMBUSTIBLE": "UNBURNABLE",
+    "GENERAL": null,
+    "PAPER_PACK": "PAPER_PACK"
+  },
+  "districts": {
+    "JUNG": {
+      "name_ko": "중구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문지, 도서류, 달력, 종이 상자",
+          "disposal_method": "물기 없이 차곡차곡 쌓아 끈으로 묶어서 배출. 스프링/비닐 표지 제거",
+          "prohibited_items": "비닐 코팅 종이, 영수증(감열지), 벽지, 자석 전단지",
+          "special_notes": "우유팩 등 종이팩은 동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "우유팩, 두유팩, 주스팩, 종이컵",
+          "disposal_method": "내용물을 비우고 물로 헹군 뒤 펼쳐서 건조 후 배출",
+          "prohibited_items": "일반 폐지류와 혼합 배출, 오염된 종이팩",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "철캔, 알루미늄캔, 고철류",
+          "disposal_method": "내용물 비우고 압착하여 배출. 부탄가스는 구멍을 뚫어 배출",
+          "prohibited_items": "락카, 페인트통, 알루미늄 호일",
+          "special_notes": "플라스틱 뚜껑 등 타 재질은 분리 제거"
+        },
+        "GLASS": {
+          "allowed_items": "음료수병, 잡병류",
+          "disposal_method": "병뚜껑을 제거하고 내용물을 비운 후 배출. 깨진 유리는 신문지에 싸서 종량제 배출",
+          "prohibited_items": "도자기, 사기그릇, 내열유리, 크리스탈, 판유리",
+          "special_notes": "빈용기보증금 대상 유리병은 소매점에서 환불 가능"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 생수·음료 페트병",
+          "disposal_method": "내용물을 비우고 라벨을 제거한 후 압착하여 뚜껑을 닫아 배출",
+          "prohibited_items": "유색 페트병, 양념류·화장품·세제 용기",
+          "special_notes": "단독주택은 투명/반투명 봉투에 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "유색 페트병, 용기류(PP, PE, PS 등)",
+          "disposal_method": "내용물을 비우고 헹군 후 배출",
+          "prohibited_items": "알약 포장재, 칫솔, 완구류, 유모차",
+          "special_notes": "타 재질 혼합 품목은 일반 종량제 봉투 배출"
+        },
+        "VINYL": {
+          "allowed_items": "1회용 봉투, 뽁뽁이(에어캡), 세탁소 비닐",
+          "disposal_method": "이물질을 제거하고 투명 봉투에 담아 배출",
+          "prohibited_items": "오염된 비닐, 장판, 돗자리, 고무장갑",
+          "special_notes": "검은 봉투 배출 금지"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼 상자, 완충재",
+          "disposal_method": "테이프, 라벨 등 이물질 제거 후 배출",
+          "prohibited_items": "색상 스티로폼, 과일망, 컵라면 용기, 건축용 내외장재",
+          "special_notes": "전자제품 구입 시 완충재는 구입처 반납 권장"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 도자기, 조개껍질, 사기그릇",
+          "disposal_method": "전용 불연성 종량제 마대에 담아 배출",
+          "prohibited_items": "일반 가연성 쓰레기",
+          "special_notes": "마대 구매 후 지정 요일에 배출"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등, 폐의약품",
+          "disposal_method": "전용 수거함(동 행정복지센터 및 공동주택 전용 수거함)에 배출",
+          "prohibited_items": "깨진 형광등(종량제/불연성 배출)",
+          "special_notes": "폐의약품은 약국/보건소 수거함 배출"
+        }
+      }
+    },
+    "SEO": {
+      "name_ko": "서구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 도서, 상자류",
+          "disposal_method": "테이프·철핀 등 이물질 제거 후 펼쳐서 묶어 배출",
+          "prohibited_items": "코팅지, 영수증, 오염된 종이",
+          "special_notes": "상자류는 펼쳐서 납작하게 접어 배출"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "살균팩, 멸균팩",
+          "disposal_method": "내용물 비우고 헹군 후 압착하여 일반 폐지와 구분 배출",
+          "prohibited_items": "일반 폐지 혼합",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "음료·식품캔, 고철",
+          "disposal_method": "내용물 비우고 플라스틱 캡 제거 후 압착 배출",
+          "prohibited_items": "부탄가스(내용물 잔류 시)",
+          "special_notes": "부탄가스는 통풍 잘되는 곳에서 구멍 배출"
+        },
+        "GLASS": {
+          "allowed_items": "유리병류",
+          "disposal_method": "뚜껑 제거 후 내용물 비우고 배출",
+          "prohibited_items": "깨진 유리, 내열유리, 거울",
+          "special_notes": "깨진 유리는 불연성 마대 사용"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "내용물 비우기 -> 라벨 제거 -> 압착 후 뚜껑 닫아 별도 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "일반 플라스틱과 분리 필수"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱 용기류",
+          "disposal_method": "이물질 세척 후 투명 봉투 배출",
+          "prohibited_items": "문구류, 옷걸이, CD/DVD",
+          "special_notes": "재질 분리 불가능 시 종량제 배출"
+        },
+        "VINYL": {
+          "allowed_items": "비닐 봉투류, 포장재",
+          "disposal_method": "내용물 비우고 흩날리지 않게 투명 봉투에 배출",
+          "prohibited_items": "오염된 비닐",
+          "special_notes": "깨끗이 세척 가능한 비닐만 재활용"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼 상자",
+          "disposal_method": "운송장·테이프 제거 후 묶어서 배출",
+          "prohibited_items": "색깔 스티로폼, 코팅 스티로폼",
+          "special_notes": "검은색 고무대야는 대형폐기물"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "도자기, 깨진 유리, 뼈, 패류 껍데기",
+          "disposal_method": "전용 불연성 종량제 마대에 담아 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "목요일 저녁 수거"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐형광등, 폐건전지",
+          "disposal_method": "전용 수거함 이용",
+          "prohibited_items": "파손된 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "DONG": {
+      "name_ko": "동구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문지, 박스류",
+          "disposal_method": "물기에 젖지 않게 차곡차곡 묶어서 배출",
+          "prohibited_items": "광고지, 전단지, 부직포",
+          "special_notes": "박스 테이프 완벽 제거"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩, 종이컵",
+          "disposal_method": "헹구고 펼쳐서 종이팩 전용 수거함 배출",
+          "prohibited_items": "일반 폐지",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "캔류, 고철",
+          "disposal_method": "내용물 세척 및 압착 배출",
+          "prohibited_items": "알루미늄 호일",
+          "special_notes": "부탄가스는 완전 소진 후 배출"
+        },
+        "GLASS": {
+          "allowed_items": "유리병",
+          "disposal_method": "세척 후 유리병 수거함 배출",
+          "prohibited_items": "도자기, 사기류",
+          "special_notes": "깨진 유리는 종량제/불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "라벨 제거 및 압착하여 별도 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "별도 수거함/투명 봉투 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "일반 플라스틱류",
+          "disposal_method": "이물질 제거 후 배출",
+          "prohibited_items": "알약 포장재, 칫솔",
+          "special_notes": "분리 어려운 복합재질은 종량제"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투에 담아 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "세척 불가능 시 일반 종량제 봉투 배출"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "이물질 제거 후 배출",
+          "prohibited_items": "과일망, 색상 스티로폼",
+          "special_notes": "과일 포장재는 일반 종량제 봉투"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 사기그릇",
+          "disposal_method": "전용 불연성 종량제 마대 배출",
+          "prohibited_items": "타는 쓰레기",
+          "special_notes": "전용 마대 사용 필수"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등, 폐의약품",
+          "disposal_method": "전용 수거함 배출",
+          "prohibited_items": "깨진 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함 및 약국/보건소 전용 수거함"
+        }
+      }
+    },
+    "YEONGDO": {
+      "name_ko": "영도구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 책자, 상자",
+          "disposal_method": "차곡차곡 묶어서 배출",
+          "prohibited_items": "비닐 코팅지, 영수증",
+          "special_notes": "테이프 제거 필수"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩류",
+          "disposal_method": "세척 후 펴서 배출",
+          "prohibited_items": "일반 종이",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "금속캔, 부탄가스통",
+          "disposal_method": "내용물 비우고 구멍 뚫어 배출",
+          "prohibited_items": "페인트통",
+          "special_notes": "안전 사고 주의"
+        },
+        "GLASS": {
+          "allowed_items": "유리병류",
+          "disposal_method": "뚜껑 분리 후 배출",
+          "prohibited_items": "내열유리, 크리스탈",
+          "special_notes": "깨진 병은 불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 페트병",
+          "disposal_method": "라벨 제거, 압착 후 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "투명 봉투 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱류",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "장난감, 옷걸이",
+          "special_notes": "복합재질 종량제"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투 배출",
+          "prohibited_items": "오염된 비닐",
+          "special_notes": "이물질 제거 필수"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "테이프 제거 후 배출",
+          "prohibited_items": "컵라면 용기, 과일망",
+          "special_notes": "색상 스티로폼 일반 종량제 봉투 배출"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 도자기",
+          "disposal_method": "불연성 마대 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "전용 불연성 종량제 마대 사용"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐형광등, 폐건전지",
+          "disposal_method": "수거함 배출",
+          "prohibited_items": "파손품",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "JIN": {
+      "name_ko": "부산진구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 종이 상자",
+          "disposal_method": "펴서 묶어서 배출",
+          "prohibited_items": "코팅지, 영수증",
+          "special_notes": "박스 스티커 제거"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "우유팩, 음료팩",
+          "disposal_method": "세척 후 펴서 배출",
+          "prohibited_items": "일반 폐지",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "철캔, 알루미늄캔",
+          "disposal_method": "압착하여 배출",
+          "prohibited_items": "호일",
+          "special_notes": "부탄가스 구멍 배출"
+        },
+        "GLASS": {
+          "allowed_items": "유리병류",
+          "disposal_method": "뚜껑 분리 배출",
+          "prohibited_items": "도자기, 내열유리",
+          "special_notes": "깨진 유리는 마대/종량제"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "라벨 제거, 압착 후 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "독립 분리배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱 용기",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "완구류, 칫솔",
+          "special_notes": "단일 재질만 배출"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투 담아 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "세척 후 배출"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼 상자",
+          "disposal_method": "테이프 제거 후 배출",
+          "prohibited_items": "과일망, 컵라면 용기",
+          "special_notes": "흰색 포장재만 가능"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "타일, 사기그릇, 깨진 유리",
+          "disposal_method": "불연성 마대 배출",
+          "prohibited_items": "일반 종량제 봉투 배출",
+          "special_notes": "전용 불연성 종량제 마대 사용"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등",
+          "disposal_method": "전용함 배출",
+          "prohibited_items": "깨진 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "DONGRAE": {
+      "name_ko": "동래구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 상자류",
+          "disposal_method": "차곡차곡 묶어서 배출",
+          "prohibited_items": "감열지, 코팅지",
+          "special_notes": "이물질 완벽 제거"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩, 종이컵",
+          "disposal_method": "헹군 후 압착 배출",
+          "prohibited_items": "일반 폐지",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "캔류, 고철",
+          "disposal_method": "내용물 비우고 배출",
+          "prohibited_items": "페인트통",
+          "special_notes": "부탄가스 잔량 소진"
+        },
+        "GLASS": {
+          "allowed_items": "유리병",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "판유리, 크리스탈",
+          "special_notes": "불연성 마대 활용"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "라벨 떼고 압착 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "플라스틱과 별도 구분"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱류",
+          "disposal_method": "내용물 비우고 배출",
+          "prohibited_items": "알약 포장재, 빨대",
+          "special_notes": "재질 분리 필수"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투에 담아 배출",
+          "prohibited_items": "장판, 고무장갑",
+          "special_notes": "오염물 제거"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "테이프 제거 후 배출",
+          "prohibited_items": "색깔 스티로폼, 과일망",
+          "special_notes": "일반 종량제 봉투 배출"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "도자기, 판유리, 내열유리",
+          "disposal_method": "불연성 마대 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "전용 불연성 종량제 마대 사용"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등",
+          "disposal_method": "전용 수거함",
+          "prohibited_items": "깨진 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "NAM": {
+      "name_ko": "남구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 책자, 종이 상자",
+          "disposal_method": "묶어서 배출. 영수증/파쇄지는 종량제",
+          "prohibited_items": "영수증, 파쇄지, 코팅지",
+          "special_notes": "핸드타올은 물기만 있을 때 가능"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "살균팩, 멸균팩",
+          "disposal_method": "내용물 비우고 물로 헹군 후 배출",
+          "prohibited_items": "일반 종이류",
+          "special_notes": "종이팩 수거함 배출"
+        },
+        "CAN": {
+          "allowed_items": "캔류, 부탄가스",
+          "disposal_method": "내용물 제거 후 배출",
+          "prohibited_items": "알루미늄 호일",
+          "special_notes": "부탄가스 화재 주의"
+        },
+        "GLASS": {
+          "allowed_items": "유리병, 유리잔",
+          "disposal_method": "내용물 비우고 배출",
+          "prohibited_items": "내열유리, 냄비뚜껑",
+          "special_notes": "깨진 유리는 신문지/마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "라벨 제거, 압착 후 뚜껑 닫아 배출",
+          "prohibited_items": "유색 페트병, 샴푸통",
+          "special_notes": "유색 페트병은 플라스틱 수거함"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱류",
+          "disposal_method": "재질별 분리 배출",
+          "prohibited_items": "알약 포장재, 완구류",
+          "special_notes": "알약 포장재는 종량제"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류, 에어캡",
+          "disposal_method": "투명 봉투에 담아 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "1회용 봉투, 세탁소 비닐 가능"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "이물질 제거 후 배출",
+          "prohibited_items": "색상 스티로폼",
+          "special_notes": "흰색만 재활용 가능"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "내열유리, 깨진 유리(대량)",
+          "disposal_method": "전용 불연성 종량제 마대 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "전용 불연성 종량제 마대 사용"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등",
+          "disposal_method": "전용함 배출",
+          "prohibited_items": "파손 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "BUK": {
+      "name_ko": "북구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 골판지 박스",
+          "disposal_method": "이물질 제거 후 펼쳐서 묶음 배출",
+          "prohibited_items": "벽지, 영수증, 택배전표",
+          "special_notes": "송장 스티커 완벽 제거"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "우유팩, 음료팩, 종이컵",
+          "disposal_method": "헹군 후 압착 배출",
+          "prohibited_items": "일반 폐지",
+          "special_notes": "일반 종이와 혼합 금지"
+        },
+        "CAN": {
+          "allowed_items": "철캔, 알루미늄캔, 부탄가스",
+          "disposal_method": "구멍 뚫어 내용물 소진 후 배출",
+          "prohibited_items": "페인트통, 락카",
+          "special_notes": "알루미늄 호일 종량제"
+        },
+        "GLASS": {
+          "allowed_items": "음료병, 기타 병류",
+          "disposal_method": "뚜껑 제거 후 배출",
+          "prohibited_items": "사기·도자기, 판유리",
+          "special_notes": "깨진 유리는 신문지 싸서 배출"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "라벨 제거, 압착 후 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "유색 페트는 플라스틱 분류"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱 용기(PE, PP, PS)",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "치약 용기, 칫솔, 장난감",
+          "special_notes": "치약 등 세척 불가는 종량제"
+        },
+        "VINYL": {
+          "allowed_items": "폐비닐류",
+          "disposal_method": "투명 봉투 담아 배출",
+          "prohibited_items": "식탁보, 고무장갑, 장판",
+          "special_notes": "검은 봉투 사용 금지"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼 완충재",
+          "disposal_method": "이물질 제거 후 배출",
+          "prohibited_items": "색깔 스티로폼, 과일망, 컵라면 용기",
+          "special_notes": "젤타입 아이스팩은 종량제"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 병, 판유리, 도자기",
+          "disposal_method": "불연성 쓰레기로 배출",
+          "prohibited_items": "일반 가연성",
+          "special_notes": "전용 불연성 종량제 마대"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐형광등, 폐전지류",
+          "disposal_method": "전용 수거함 배출",
+          "prohibited_items": "백열전구(일반 종량제 봉투)",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "HAEUNDAE": {
+      "name_ko": "해운대구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 박스, 종이류",
+          "disposal_method": "수요일 배출(단독주택). 차곡차곡 묶어서 배출",
+          "prohibited_items": "코팅지, 영수증",
+          "special_notes": "수요일 문전 배출"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩류",
+          "disposal_method": "수요일 배출. 헹군 후 펼쳐서 배출",
+          "prohibited_items": "일반 종이",
+          "special_notes": "동 동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "캔, 고철류",
+          "disposal_method": "월요일 배출(단독주택). 세척 및 압착 배출",
+          "prohibited_items": "호일",
+          "special_notes": "월요일 문전 배출"
+        },
+        "GLASS": {
+          "allowed_items": "유리병",
+          "disposal_method": "월요일 배출. 세척 후 배출",
+          "prohibited_items": "내열유리, 도자기",
+          "special_notes": "깨진 유리는 불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "월요일 배출. 라벨 제거 및 압착 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "월요일 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "일반 플라스틱",
+          "disposal_method": "월요일 배출. 내용물 비우고 배출",
+          "prohibited_items": "완구, 칫솔, 알약 포장",
+          "special_notes": "월요일 배출"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "수요일 배출. 투명 봉투 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "수요일 배출"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "수요일 배출. 이물질 제거 후 묶음 배출",
+          "prohibited_items": "과일망, 컵라면 용기",
+          "special_notes": "수요일 배출"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 도자기, 화분, 타일",
+          "disposal_method": "해운대구 전용 불연성 종량제 마대(10L/20L) 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "월/수요일 지정 배출"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등",
+          "disposal_method": "전용 수거함 배출",
+          "prohibited_items": "깨진 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "GEUMJEONG": {
+      "name_ko": "금정구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 도서, 상자",
+          "disposal_method": "물기 없이 펴서 차곡차곡 묶어서 배출",
+          "prohibited_items": "방수용지, 사용한 벽지",
+          "special_notes": "투명 봉투 또는 끈으로 배출"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "우유팩, 주스팩",
+          "disposal_method": "헹구고 압착하여 배출",
+          "prohibited_items": "일반 종이",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "캔류, 고철",
+          "disposal_method": "내용물 비우고 압착 배출",
+          "prohibited_items": "락카통(내용물 잔류)",
+          "special_notes": "부탄가스 구멍 배출"
+        },
+        "GLASS": {
+          "allowed_items": "유리병류",
+          "disposal_method": "뚜껑 제거 후 배출",
+          "prohibited_items": "사기그릇, 내열유리",
+          "special_notes": "깨진 유리는 불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 페트병",
+          "disposal_method": "라벨 제거, 압착 후 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "플라스틱과 분리 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱 용기류",
+          "disposal_method": "세척 후 구분 배출",
+          "prohibited_items": "볼펜, 카세트테이프, 노끈",
+          "special_notes": "오염 품목 종량제 배출"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투에 담아 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "깨끗한 비닐만 재활용"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼 상자, 받침 접시",
+          "disposal_method": "이물질 제거 후 배출",
+          "prohibited_items": "컵라면 용기, 색깔 스티로폼",
+          "special_notes": "흰색 스티로폼만 가능"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 사기그릇, 조개껍데기",
+          "disposal_method": "전용 불연성 종량제 마대에 담아 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "전용 불연성 종량제 마대 사용"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐형광등, 폐건전지",
+          "disposal_method": "전용 수거함 배출",
+          "prohibited_items": "백열전구",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "GANGSEO": {
+      "name_ko": "강서구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 상자류",
+          "disposal_method": "이물질 제거 후 묶어서 배출",
+          "prohibited_items": "비닐 코팅지",
+          "special_notes": "박스 스티커 제거"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩류",
+          "disposal_method": "헹구고 펼쳐서 배출",
+          "prohibited_items": "일반 종이",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "금속캔, 고철",
+          "disposal_method": "내용물 세척 후 배출",
+          "prohibited_items": "호일",
+          "special_notes": "부탄가스 잔량 제거"
+        },
+        "GLASS": {
+          "allowed_items": "유리병",
+          "disposal_method": "내용물 비우고 배출",
+          "prohibited_items": "도자기, 판유리",
+          "special_notes": "깨진 유리는 불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "라벨 제거 후 압착 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "별도 구분 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱 용기",
+          "disposal_method": "이물질 세척 후 배출",
+          "prohibited_items": "완구류, 칫솔",
+          "special_notes": "단일 재질 배출"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투 담아 배출",
+          "prohibited_items": "오염된 비닐",
+          "special_notes": "세척 가능 비닐만"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "테이프 제거 후 배출",
+          "prohibited_items": "과일망, 색상 스티로폼",
+          "special_notes": "일반 종량제 봉투 배출 분류"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 도자기",
+          "disposal_method": "전용 불연성 종량제 마대 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "전용 불연성 종량제 마대 사용"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등",
+          "disposal_method": "전용함 배출",
+          "prohibited_items": "파손품",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "YEONJE": {
+      "name_ko": "연제구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 상자류",
+          "disposal_method": "차곡차곡 묶어서 배출",
+          "prohibited_items": "감열지, 영수증",
+          "special_notes": "테이프 완벽 제거"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩, 종이컵",
+          "disposal_method": "헹군 후 압착 배출",
+          "prohibited_items": "일반 종이",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "캔류, 고철",
+          "disposal_method": "내용물 비우고 배출",
+          "prohibited_items": "페인트통",
+          "special_notes": "부탄가스 구멍 배출"
+        },
+        "GLASS": {
+          "allowed_items": "유리병",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "내열유리, 크리스탈",
+          "special_notes": "깨진 유리는 불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "수요일 배출. 라벨 제거 및 압착 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "수요일 지정 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "유색 페트병, 일반 플라스틱",
+          "disposal_method": "월요일 배출. 세척 후 배출",
+          "prohibited_items": "칫솔, 완구류",
+          "special_notes": "월요일 지정 배출"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투 담아 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "세척 후 배출"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼, 요구르트병",
+          "disposal_method": "화요일 배출. 이물질 제거 후 배출",
+          "prohibited_items": "과일망, 색상 스티로폼",
+          "special_notes": "화요일 지정 배출"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 도자기, 조개껍데기",
+          "disposal_method": "화요일 배출. 불연성 마대 사용",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "화요일 지정 배출"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐형광등, 폐건전지",
+          "disposal_method": "전용함 배출",
+          "prohibited_items": "깨진 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "SUYEONG": {
+      "name_ko": "수영구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 박스류",
+          "disposal_method": "물기 없이 묶어서 배출",
+          "prohibited_items": "비닐 코팅지",
+          "special_notes": "스티커 제거 필수"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩류",
+          "disposal_method": "헹군 후 펼쳐 배출",
+          "prohibited_items": "일반 종이",
+          "special_notes": "동 동 행정복지센터 교환"
+        },
+        "CAN": {
+          "allowed_items": "금속캔, 고철",
+          "disposal_method": "내용물 세척 후 배출",
+          "prohibited_items": "호일",
+          "special_notes": "부탄가스 잔량 소진"
+        },
+        "GLASS": {
+          "allowed_items": "유리병류",
+          "disposal_method": "내용물 비우고 배출",
+          "prohibited_items": "도자기, 내열유리",
+          "special_notes": "깨진 유리는 불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 페트병",
+          "disposal_method": "라벨 제거, 압착 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "투명 봉투 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "일반 플라스틱",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "완구류, CD",
+          "special_notes": "복합 재질 종량제"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "깨끗이 씻어서 배출"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "테이프 제거 후 배출",
+          "prohibited_items": "컵라면 용기, 과일망",
+          "special_notes": "흰색 상자만 재활용"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 도자기, 화분",
+          "disposal_method": "수영구 전용 불연성 종량제 마대 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "전용 마대 구매 배출"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등",
+          "disposal_method": "전용 수거함",
+          "prohibited_items": "파손 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "SASANG": {
+      "name_ko": "사상구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 골판지 박스",
+          "disposal_method": "차곡차곡 묶어서 문전 배출",
+          "prohibited_items": "영수증, 코팅지",
+          "special_notes": "박스 테이프 완벽 제거"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩, 종이컵",
+          "disposal_method": "헹구고 펼쳐 배출",
+          "prohibited_items": "일반 폐지",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "캔류, 고철",
+          "disposal_method": "내용물 세척 및 압착 배출",
+          "prohibited_items": "페인트통",
+          "special_notes": "부탄가스 구멍 배출"
+        },
+        "GLASS": {
+          "allowed_items": "유리병",
+          "disposal_method": "뚜껑 제거 후 배출",
+          "prohibited_items": "내열유리, 타일",
+          "special_notes": "깨진 유리는 불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "라벨 제거, 압착 후 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "독립 분리배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱 용기류",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "칫솔, 완구류",
+          "special_notes": "단일 재질만 수거"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 비닐 봉투 배출",
+          "prohibited_items": "오염된 비닐",
+          "special_notes": "이물질 완벽 제거"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼 상자",
+          "disposal_method": "테이프 제거 후 배출",
+          "prohibited_items": "과일망, 色스티로폼",
+          "special_notes": "흰색 완충재만 재활용"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "타일, 깨진 유리, 도자기",
+          "disposal_method": "전용 불연성 종량제 마대 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "전용 불연성 종량제 마대 사용"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐건전지, 폐형광등",
+          "disposal_method": "전용 수거함 배출",
+          "prohibited_items": "깨진 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "SAHA": {
+      "name_ko": "사하구",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 도서, 상자",
+          "disposal_method": "묶어서 배출",
+          "prohibited_items": "감열지, 코팅지",
+          "special_notes": "이물질 제거 필수"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "우유팩, 음료팩",
+          "disposal_method": "세척 후 압착 배출",
+          "prohibited_items": "일반 종이",
+          "special_notes": "동 동 행정복지센터 교환"
+        },
+        "CAN": {
+          "allowed_items": "금속캔, 부탄가스",
+          "disposal_method": "구멍 배출 및 세척",
+          "prohibited_items": "호일",
+          "special_notes": "안전 사고 주의"
+        },
+        "GLASS": {
+          "allowed_items": "유리병",
+          "disposal_method": "내용물 비우고 배출",
+          "prohibited_items": "도자기, 조개껍데기",
+          "special_notes": "불연성 마대 배출"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 투명 페트병",
+          "disposal_method": "라벨 제거, 압착 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "투명 봉투 별도 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "플라스틱 용기",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "알약 포장재, 문구류",
+          "special_notes": "복합 재질 종량제"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투 담아 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "깨끗이 씻어 배출"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "이물질 제거 후 배출",
+          "prohibited_items": "과일망, 컵라면 용기",
+          "special_notes": "색상 스티로폼 종량제"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 도자기, 조개껍질",
+          "disposal_method": "전용 불연성 종량제 마대 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "전용 마대 구매 배출"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐형광등, 폐건전지",
+          "disposal_method": "전용 수거함",
+          "prohibited_items": "파손품",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    },
+    "GIJANG": {
+      "name_ko": "기장군",
+      "rules": {
+        "PAPER": {
+          "allowed_items": "신문, 박스류",
+          "disposal_method": "물기 없이 차곡차곡 묶음 배출",
+          "prohibited_items": "영수증, 코팅지",
+          "special_notes": "테이프 제거 필수"
+        },
+        "PAPER_PACK": {
+          "allowed_items": "종이팩류",
+          "disposal_method": "헹군 후 펼쳐 배출",
+          "prohibited_items": "일반 종이",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함에서 휴지 교환 가능"
+        },
+        "CAN": {
+          "allowed_items": "캔류, 고철",
+          "disposal_method": "세척 후 압착 배출",
+          "prohibited_items": "페인트통",
+          "special_notes": "부탄가스 소진 후 구멍 배출"
+        },
+        "GLASS": {
+          "allowed_items": "유리병류",
+          "disposal_method": "뚜껑 제거 후 배출",
+          "prohibited_items": "내열유리, 크리스탈",
+          "special_notes": "깨진 유리는 불연성 마대"
+        },
+        "PET_CLEAR": {
+          "allowed_items": "무색 페트병",
+          "disposal_method": "라벨 제거 후 압착 배출",
+          "prohibited_items": "유색 페트병",
+          "special_notes": "투명 봉투 구분 배출"
+        },
+        "PLASTIC": {
+          "allowed_items": "일반 플라스틱",
+          "disposal_method": "세척 후 배출",
+          "prohibited_items": "완구류, 칫솔",
+          "special_notes": "단일 재질 배출"
+        },
+        "VINYL": {
+          "allowed_items": "비닐류",
+          "disposal_method": "투명 봉투에 담아 배출",
+          "prohibited_items": "오염 비닐",
+          "special_notes": "이물질 제거 필수"
+        },
+        "STYROFOAM": {
+          "allowed_items": "흰색 스티로폼",
+          "disposal_method": "테이프 제거 후 배출",
+          "prohibited_items": "과일망, 컵라면 용기",
+          "special_notes": "흰색 포장 박스만 재활용"
+        },
+        "UNBURNABLE": {
+          "allowed_items": "깨진 유리, 도자기, 화분",
+          "disposal_method": "기장군 전용 불연성 종량제 마대 배출",
+          "prohibited_items": "가연성 쓰레기",
+          "special_notes": "기장군 전용 마대 사용"
+        },
+        "HAZARDOUS": {
+          "allowed_items": "폐형광등, 폐전지",
+          "disposal_method": "전용 수거함 배출",
+          "prohibited_items": "깨진 형광등",
+          "special_notes": "동 행정복지센터 및 공동주택 전용 수거함"
+        }
+      }
+    }
+  },
+  "verified_districts": {}
+}

@@ -8,7 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
-from ..models import Answers, Decision, Observation, Question, Region, ResultCode, Source
+from ..models import Answers, Decision, DistrictInfo, Observation, Question, Region, ResultCode, Source
 from .bullets import build_bullets, is_box_like
 
 RULES_PATH = Path(__file__).resolve().parent.parent / "rules" / "rules.busan.json"
@@ -117,7 +117,7 @@ def _washable(
     return ctx.final("GENERAL", build_bullets(o, extra="오염 제거 어려움 (사용자 답변)"))
 
 
-def decide(
+def _decide(
     observation: Observation,
     region: Region | dict,
     answers: Answers | dict | None,
@@ -189,3 +189,48 @@ def _paper(ctx: _Ctx, o: Observation) -> Decision:
         # 컵홀더·종이 용기처럼 상자가 아닌 종이는 "상자를 펼쳐" 대신 일반 종이류 문구(AI가 cardboard_box로 내도 적용)
         return ctx.final("PAPER", build_bullets(o), override=load_rules()["paper_other"])
     return ctx.final("PAPER", build_bullets(o))
+
+
+DISTRICTS_PATH = RULES_PATH.with_name("rules.busan.districts.json")
+UNVERIFIED_LABEL = "{gu} 안내 (팀 조사 기준, 공식 링크 없음 — 구청 안내를 확인하세요)"
+
+
+@lru_cache
+def load_districts() -> dict[str, Any]:
+    return json.loads(DISTRICTS_PATH.read_text(encoding="utf-8"))
+
+
+def district_info(gu: str, code: ResultCode | None) -> DistrictInfo | None:
+    """판정한 결과 코드 → 구 데이터 분류로 연결. 일반폐기물(GENERAL)·위험물 등 대응 분류가 없으면 None.
+
+    요일·배출 방법(disposal_method)은 구가 아니라 동·권역별로 달라 내려주지 않는다.
+    """
+    data = load_districts()
+    category = data["result_code_to_category_id"].get(code) if code else None
+    district_id = data["gu_name_to_district_id"].get(gu)
+    rule = data["districts"].get(district_id, {}).get("rules", {}).get(category) if category and district_id else None
+    if not rule:
+        return None
+    link = data.get("verified_districts", {}).get(district_id)
+    return DistrictInfo(
+        gu=gu,
+        prohibited_items=rule.get("prohibited_items", ""),
+        special_notes=rule.get("special_notes", ""),
+        verified=bool(link),
+        source_label=f"{gu} 안내 (공식 확인)" if link else UNVERIFIED_LABEL.format(gu=gu),
+        source_url=link or None,
+    )
+
+
+def decide(
+    observation: Observation,
+    region: Region | dict,
+    answers: Answers | dict | None,
+    attempt: int,
+) -> Decision:
+    """규칙 판단(_decide) 결과에 구 안내를 붙인다. 구 안내는 최종 결과(FINAL)에만, 부산시 규칙 판단은 바꾸지 않는다."""
+    decision = _decide(observation, region, answers, attempt)
+    if decision.kind == "FINAL":
+        gu = region["gu"] if isinstance(region, dict) else region.gu
+        decision.district_info = district_info(gu, decision.result_code)
+    return decision
