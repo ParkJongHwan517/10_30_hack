@@ -264,7 +264,8 @@ img, svg, video { max-width: 100%; }
 .multi-cards { display: grid; gap: 12px; margin-bottom: 22px; }
 .item-card { padding: 16px; border-radius: 14px; border: 1px solid var(--line); background: #fff; }
 .item-card header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.item-card header strong { color: var(--navy); font-size: 15px; }
+/* 제목의 "×2"가 한글과 다른 글꼴(영문 글꼴)로 그려지지 않도록, 한글 글꼴을 앞에 둬서 한 글꼴에서 모두 나오게 한다 */
+.item-card header strong { color: var(--navy); font-size: 15px; font-family: Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; }
 .item-index { width: 26px; height: 26px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; color: #fff; font-size: 12px; font-weight: 800; background: #90a0b2; }
 .item-headline { margin: 0 0 10px; font-size: 14px; font-weight: 750; }
 .item-recycle { background: #f3fbf7; border-color: #c9ebd9; }
