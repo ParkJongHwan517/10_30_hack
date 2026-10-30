@@ -1,6 +1,6 @@
 """결과 화면 "AI 분석 결과" 불릿 생성 (PROJECT_SPEC §9.4). 담당: P.
 
-줄 순서는 디자인 이미지 ④를 따른다: 페트병·종이상자는 부착물이 오염보다 먼저, 용기류는 오염이 먼저.
+줄 순서는 디자인 이미지 ④를 따른다: 페트병·캔·종이상자는 부착물이 오염보다 먼저, 용기류는 오염이 먼저.
 """
 
 from ..models import Observation
@@ -18,11 +18,13 @@ def _item_line(o: Observation) -> str | None:
             return "플라스틱 배달 용기(PP 추정)" if o.material_guess == "PP" else "플라스틱 배달 용기"
         case "cardboard_box":
             return "종이상자 (골판지)"
+        case "can":
+            return "캔 (금속)"
     return None
 
 
 def _contamination_line(o: Observation, washed: bool) -> str | None:
-    if o.item_type == "pet_bottle":
+    if o.item_type in ("pet_bottle", "can"):
         return "내용물 있음" if o.contents_present == "yes" else "내용물 없음"
     clean = o.contamination.level == "none"
     if o.item_type == "cardboard_box":
@@ -49,7 +51,7 @@ def build_bullets(o: Observation, *, washed: bool = False, extra: str | None = N
     contamination = _contamination_line(o, washed)
     attachments = _attachment_lines(o)
 
-    if o.item_type in ("pet_bottle", "cardboard_box"):
+    if o.item_type in ("pet_bottle", "can", "cardboard_box"):
         lines = [item, *attachments, contamination]
     else:
         lines = [item, contamination, *attachments]

@@ -133,5 +133,8 @@ def decide(
             if food_soiled or o.coating_or_mixed_material == "yes":
                 return ctx.final("GENERAL", build_bullets(o))
             return ctx.final("PAPER", build_bullets(o))
+        case "can":
+            # 부산시 안내: 이물질 제거 후 캔류로 배출. 내용물·오염은 헹구면 되므로 질문 없이 배출 방법으로 안내한다
+            return ctx.final("CAN", build_bullets(o))
 
     return ctx.non_final("UNKNOWN", UNKNOWN_HEADLINE, True)
