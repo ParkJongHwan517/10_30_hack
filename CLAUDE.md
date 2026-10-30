@@ -13,7 +13,7 @@
 - **스택(확정):** 프론트 React + Vite + TypeScript + Tailwind / 백엔드 FastAPI(Python 3.12) + Pydantic v2 / AI **Google Gemini 비전**(`google-genai`) / DB **Supabase**(익명 로그만, 선택) / 배포 **Vercel 단일 프로젝트**(프론트 정적 + `api/index.py`)
 - 패키지 매니저: 프론트 **npm**, 백엔드 **pip** (다른 것을 섞지 않는다)
 - 마감: **10/31 08:30 제출**, **10/31 01:00 기능 동결**
-- 팀: 5명 = **백엔드 2명 + 프론트 3명** (역할·담당 폴더는 §4. `PROJECT_SPEC.md` §14의 A~E 5역할 구분보다 **이 파일 §4가 우선**한다)
+- 팀: 5명 = **백엔드 2명(P·Q) + 프론트 3명** (역할·담당 폴더는 §4. `PROJECT_SPEC.md` §14의 A~E 5역할 구분보다 **이 파일 §4가 우선**한다)
 - 발표·시연(E 역할)은 별도 담당 없이 팀 전원이 나눠 맡는다.
 
 ## 2. 절대 원칙 (어기지 않는다)
@@ -55,17 +55,19 @@ npm run build          # 배포 전 빌드 확인
 
 **개인 브랜치 이름:** 백엔드 `dev/api-<이름>` / 프론트 `dev/front-<이름>` (영문 소문자, 예: `dev/api-junho`)
 
-| 역할 (인원) | 담당자 | 담당 폴더/파일 |
-|---|---|---|
-| **백엔드 1 — 판독 (C)** | TODO | `backend/app/routers/observe.py`, `backend/app/services/vision.py`, `mock_vision.py`, `log.py` |
-| **백엔드 2 — 규칙·데이터 (D)** | TODO | `backend/app/routers/decide.py`, `backend/app/services/decide.py`, `bullets.py`, `backend/app/rules/**`, `backend/tests/**`, `samples/**` |
-| **프론트 1** | TODO | 화면 1~3 (지역 선택·촬영·AI 분석 중), `frontend/src/lib/image.ts` |
-| **프론트 2** | TODO | 화면 4~5·A-6 (질문·규칙 판단·세척 안내), 보완 화면(NOTICE_RESHOOT·NOTICE_UNKNOWN·오류), 상태 머신 |
-| **프론트 3** | TODO | 결과 화면(A-8/B-6/④), 공통 컴포넌트(Header·Footer·ProgressChecks·ResultCard), `frontend/src/lib/api.ts` |
-| **A 통합·배포 (공용, 1명 겸임)** | TODO | `backend/app/models.py`, `backend/app/main.py`, `api/**`, `vercel.json`, `requirements*.txt`, `frontend/package*.json`, `frontend/vite.config.ts`, `frontend/src/lib/api-types.ts`(생성), `.env.example`, `.gitignore`, `docs/**`, `CLAUDE.md` — **다른 사람은 수정 전 A에게 알린다** |
+> **이 문서와 `PROJECT_SPEC.md` 본문의 "A(통합)"는 P를 뜻한다.** 기존 C(판독)는 Q, D(규칙)는 P에 해당한다.
 
-- 담당자 칸(TODO)은 팀에서 정해 채운다. 프론트 화면 분담은 제안이며, 바꿔도 **같은 파일을 동시에 고치지 않는 것**만 지킨다.
-- A(통합·배포)는 백엔드 2명 중 1명이 겸한다. 공용 파일은 A만 고친다.
+| 역할 | 담당자 · 브랜치 | 담당 폴더/파일 |
+|---|---|---|
+| **P — 백엔드: 규칙·계약·통합** | 준호 · `dev/api-junho` | `backend/app/models.py`, `backend/app/main.py`, `backend/app/routers/decide.py`, `backend/app/services/decide.py`, `backend/app/services/bullets.py`, `backend/app/rules/**`, `backend/tests/**`, `samples/expected.json`, `docs/**`, `CLAUDE.md`, `frontend/src/lib/api-types.ts`(생성) |
+| **Q — 백엔드: 판독·로그·배포** | TODO | `backend/app/routers/observe.py`, `backend/app/services/vision.py`, `backend/app/services/mock_vision.py`, `backend/app/services/log.py`, `api/**`, `vercel.json`, `requirements*.txt`\*, `.env.example`\*, `.gitignore`\* |
+| **프론트 (3명)** | 프론트 팀 | `frontend/**` (`src/lib/api-types.ts` 제외) — **분담은 프론트 팀이 정한다** |
+
+- \* 표시는 역할 배정표에 명시되지 않아 임시로 정한 것이다. 팀에서 확정하면 이 표를 고친다.
+- **주고받는 것:** P → Q: `models.py`, 관찰 픽스처(`backend/tests/fixtures/*.json`, `MOCK_VISION` 고정 응답으로 재사용) / Q → P: `services/log.py`의 `log_decision()`
+- **모델(`models.py`) 변경은 P만** 하고, 바꾸면 팀 채팅에 공지한 뒤 `api-types.ts`를 재생성한다(`cd frontend && npm run gen:types`, 백엔드가 :8000에 떠 있어야 함).
+- **PR 병합:** 자기 담당 파일만 바꾼 PR은 작성자가 직접, 남의 파일이나 공용 파일을 건드린 PR은 P가 확인 후 병합한다.
+- 담당자 칸(TODO)은 팀에서 정해 채운다. 프론트 팀도 분담과 상관없이 **같은 파일을 동시에 고치지 않는 것**만 지킨다.
 - 남의 폴더에서 버그를 발견하면 **직접 고치지 말고 담당자에게 알리거나 PR 코멘트로 남긴다.**
 - 포맷팅 일괄 적용(전체 파일 prettier/black 등), 파일 이동·이름 변경은 **충돌의 주원인**이므로 하지 않는다.
 

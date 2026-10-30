@@ -1,0 +1,24 @@
+{
+  "item_type": "plastic_container",
+  "material_guess": "PP",
+  "is_transparent_colorless": "no",
+  "is_white": "unknown",
+  "contents_present": "no",
+  "contamination": {
+    "level": "none",
+    "type": "none",
+    "likely_removable_by_rinsing": "unknown"
+  },
+  "attachments": {
+    "label_present": "no",
+    "tape_present": "no",
+    "waybill_present": "no",
+    "lid_present": "no"
+  },
+  "damage": "none",
+  "coating_or_mixed_material": "no",
+  "privacy_flag": false,
+  "photo_quality": "good",
+  "confidence": 0.9,
+  "notes_ko": "반투명한 플라스틱 배달 용기이며 깨끗하다."
+}
