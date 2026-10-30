@@ -272,7 +272,6 @@ export default function App() {
       <main className="page-main">
         <div className="page-intro">
           <div><span className="intro-kicker">SMART RECYCLING GUIDE</span><h2>지금 이 상태, 어떻게 버려야 할까요?</h2><p>사진 한 장으로 쓰레기의 상태를 분석하고 부산광역시 기준 배출 방법을 안내합니다.</p></div>
-          <span className="intro-location"><span className="pin-dot" /> 부산광역시</span>
         </div>
         <div className="workspace-card">
           <ProgressSteps screen={state.screen} />
