@@ -21,6 +21,7 @@ interface MultiResultScreenProps {
 /** 사진 1장에서 찾은 항목(구성품)별 결과 카드. 항목마다 /api/decide 결과를 그대로 보여준다. */
 export function MultiResultScreen({ items, previewUrl, demoMode, onAnswer, onRetakeItem, onRestart }: MultiResultScreenProps) {
   const first = items[0]?.decision
+  const groups = groupItems(items)
   return (
     <section className="screen-content result-screen">
       <p className="eyebrow">ANALYSIS COMPLETE · {items.length} ITEMS</p>
@@ -38,8 +39,10 @@ export function MultiResultScreen({ items, previewUrl, demoMode, onAnswer, onRet
         </div>
       </div>
       <div className="multi-cards">
-        {items.map((item, index) => (
-          <ItemCard key={index} index={index} item={item} onAnswer={onAnswer} onRetakeItem={onRetakeItem} />
+        {groups.map((group, index) => (
+          <ItemCard key={group.indices[0]} index={index} item={group.item} count={group.indices.length}
+            onAnswer={(_, answer) => group.indices.forEach((i) => onAnswer(i, answer))}
+            onRetakeItem={() => onRetakeItem(group.indices[0])} />
         ))}
       </div>
       <button className="button button-primary button-wide" onClick={onRestart}>처음으로 돌아가기</button>
@@ -47,9 +50,30 @@ export function MultiResultScreen({ items, previewUrl, demoMode, onAnswer, onRet
   )
 }
 
-function ItemCard({ index, item, onAnswer, onRetakeItem }: { index: number; item: ItemResult; onAnswer: MultiResultScreenProps['onAnswer']; onRetakeItem: MultiResultScreenProps['onRetakeItem'] }) {
+interface ItemGroup {
+  item: ItemResult
+  indices: number[]
+}
+
+/** 카드 제목(label_ko)과 판정 결과(decision)가 같은 항목만 한 카드로 묶는다. 판정이 다르면(예: 하나만 오염) 따로 남는다. */
+function groupItems(items: ItemResult[]): ItemGroup[] {
+  const groups: ItemGroup[] = []
+  const byKey = new Map<string, ItemGroup>()
+  items.forEach((item, index) => {
+    const key = JSON.stringify([item.observation.label_ko, item.decision])
+    const found = byKey.get(key)
+    if (found) { found.indices.push(index); return }
+    const group = { item, indices: [index] }
+    byKey.set(key, group)
+    groups.push(group)
+  })
+  return groups
+}
+
+function ItemCard({ index, item, count, onAnswer, onRetakeItem }: { index: number; item: ItemResult; count: number; onAnswer: MultiResultScreenProps['onAnswer']; onRetakeItem: MultiResultScreenProps['onRetakeItem'] }) {
   const { decision, observation, loading } = item
-  const title = observation.label_ko || `항목 ${index + 1}`
+  const baseTitle = observation.label_ko || `항목 ${index + 1}`
+  const title = count > 1 ? `${baseTitle} ×${count}` : baseTitle
 
   if (decision.kind === 'ASK_QUESTION' && decision.question) {
     return (
